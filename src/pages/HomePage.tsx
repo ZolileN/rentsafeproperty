@@ -8,9 +8,14 @@ export function HomePage() {
   const [location, setLocation] = useState('');
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cities, setCities] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   useEffect(() => {
     loadFeaturedProperties();
+    loadCities();
   }, []);
 
   async function loadFeaturedProperties() {
@@ -41,6 +46,70 @@ export function HomePage() {
       window.location.href = `/search?${params.toString()}`;
     }
   };
+
+  async function loadCities() {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('city')
+        .eq('is_active', true)
+        .eq('is_verified', true);
+
+      if (error) throw error;
+
+      const unique = Array.from(new Set((data || []).map((r: { city: string }) => r.city).filter(Boolean)));
+      unique.sort((a, b) => a.localeCompare(b));
+      setCities(unique);
+    } catch (error) {
+      console.error('Error loading cities:', error);
+    }
+  }
+
+  function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setLocation(value);
+
+    if (!value) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
+      return;
+    }
+
+    const filtered = cities
+      .filter((c) => c.toLowerCase().startsWith(value.toLowerCase()))
+      .slice(0, 8);
+
+    setSuggestions(filtered);
+    setShowSuggestions(filtered.length > 0);
+    setHighlightedIndex(-1);
+  }
+
+  function handleSelectSuggestion(city: string) {
+    setLocation(city);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setHighlightedIndex(-1);
+  }
+
+  function handleLocationKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!showSuggestions) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+        e.preventDefault();
+        handleSelectSuggestion(suggestions[highlightedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -85,10 +154,31 @@ export function HomePage() {
                     type="text"
                     id="location"
                     value={location}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+                    onChange={handleLocationChange}
+                    onKeyDown={handleLocationKeyDown}
+                    onFocus={() => setShowSuggestions(suggestions.length > 0)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    autoComplete="off"
                     className="block w-full pl-10 pr-3 py-4 border-0 focus:ring-2 focus:ring-deep-blue-500 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none"
                     placeholder="Location"
                   />
+
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      {suggestions.map((city, idx) => (
+                        <li
+                          key={city}
+                          className={`px-3 py-2 cursor-pointer text-sm ${idx === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectSuggestion(city);
+                          }}
+                        >
+                          {city}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               <div className="p-2">

@@ -14,10 +14,21 @@ export function SearchPage() {
     maxRent: '',
     bedrooms: '',
   });
+  const [cities, setCities] = useState<string[]>([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [highlightedCityIndex, setHighlightedCityIndex] = useState(-1);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    const loc = params.get('location') || params.get('city') || '';
+    if (q) setSearchQuery(q);
+    if (loc) setFilters(prev => ({ ...prev, city: loc }));
+
     loadProperties();
-  }, []);
+    loadCities();
+  }, [loadProperties]);
 
   async function loadProperties() {
     try {
@@ -60,6 +71,68 @@ export function SearchPage() {
     loadProperties();
   }
 
+  async function loadCities() {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('city')
+        .eq('is_active', true)
+        .eq('is_verified', true);
+      if (error) throw error;
+      const unique = Array.from(new Set((data || []).map((r: { city: string }) => r.city).filter(Boolean)));
+      unique.sort((a, b) => a.localeCompare(b));
+      setCities(unique);
+    } catch (error) {
+      console.error('Error loading cities:', error);
+    }
+  }
+
+  function handleCityChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value;
+    setFilters({ ...filters, city: value });
+
+    if (!value) {
+      setCitySuggestions([]);
+      setShowCitySuggestions(false);
+      setHighlightedCityIndex(-1);
+      return;
+    }
+
+    const filtered = cities
+      .filter((c) => c.toLowerCase().startsWith(value.toLowerCase()))
+      .slice(0, 8);
+
+    setCitySuggestions(filtered);
+    setShowCitySuggestions(filtered.length > 0);
+    setHighlightedCityIndex(-1);
+  }
+
+  function handleSelectCity(city: string) {
+    setFilters({ ...filters, city });
+    setShowCitySuggestions(false);
+    setCitySuggestions([]);
+    setHighlightedCityIndex(-1);
+  }
+
+  function handleCityKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!showCitySuggestions) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedCityIndex((prev) => Math.min(prev + 1, citySuggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedCityIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (highlightedCityIndex >= 0 && highlightedCityIndex < citySuggestions.length) {
+        e.preventDefault();
+        handleSelectCity(citySuggestions[highlightedCityIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setShowCitySuggestions(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -92,13 +165,36 @@ export function SearchPage() {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <input
-                  type="text"
-                  value={filters.city}
-                  onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-                  placeholder="e.g., Cape Town"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={filters.city}
+                    onChange={handleCityChange}
+                    onKeyDown={handleCityKeyDown}
+                    onFocus={() => setShowCitySuggestions(citySuggestions.length > 0)}
+                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
+                    autoComplete="off"
+                    placeholder="e.g., Cape Town"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
+                  />
+
+                  {showCitySuggestions && citySuggestions.length > 0 && (
+                    <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      {citySuggestions.map((city, idx) => (
+                        <li
+                          key={city}
+                          className={`px-3 py-2 cursor-pointer text-sm ${idx === highlightedCityIndex ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectCity(city);
+                          }}
+                        >
+                          {city}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
 
               <div>
