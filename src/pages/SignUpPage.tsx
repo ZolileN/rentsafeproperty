@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Building } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { navigateTo } from '../Router';
+import { useNavigate } from 'react-router-dom'; // Add this import
 
 export function SignUpPage() {
   const [role, setRole] = useState<'tenant' | 'landlord'>('tenant');
@@ -12,13 +12,14 @@ export function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { signUp, user } = useAuth();
+  const navigate = useNavigate(); // Add this line
 
   // Redirect if already logged in
   useEffect(() => {
     if (user && !success) {
-      navigateTo('/dashboard');
+      navigate('/dashboard'); // Update this line
     }
-  }, [user, success]);
+  }, [user, success, navigate]); // Add navigate to dependencies
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,10 +31,12 @@ export function SignUpPage() {
       setSuccess(true);
       // Give a moment for the auth state to update
       setTimeout(() => {
-        navigateTo('/dashboard');
+        navigate('/dashboard'); // Update this line
       }, 500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      // ... rest of your code
+    } catch (error) {
+      setError('Failed to create an account');
+      console.error(error);
     } finally {
       setLoading(false);
     }

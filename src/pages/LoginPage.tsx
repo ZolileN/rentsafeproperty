@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { navigateTo } from '../Router';
+import { useNavigate } from 'react-router-dom'; // Add this import
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -8,13 +8,13 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, user } = useAuth();
-
+  const navigate = useNavigate(); // Add this line
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigateTo('/dashboard');
+      navigate('/dashboard');
     }
-  }, [user]);
+  }, [user, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,7 +23,7 @@ export function LoginPage() {
 
     try {
       await signIn(email, password);
-      navigateTo('/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
     } finally {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight } from 'lucide-react';
-import { supabase, type Property } from '../lib/supabase';
+import { Link } from 'react-router-dom'; 
+import { supabase, type Property } from '../lib/supabase'; // Add this importimport { supabase, type Property } from '../lib/supabase';
 import { PropertyCard } from '../components/PropertyCard';
 
 export function HomePage() {
@@ -358,18 +359,18 @@ export function HomePage() {
             Join thousands of happy renters who found their perfect home with RentSafe.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a
-              href="/search"
+            <Link 
+              to="/search"
               className="bg-white text-deep-blue-900 hover:bg-gray-100 font-medium py-3 px-8 rounded-lg transition duration-200 inline-flex items-center justify-center"
             >
               Browse Properties
-            </a>
-            <a
-              href="/signup"
+            </Link>
+            <Link
+              to="/signup"
               className="border-2 border-white text-white hover:bg-white hover:bg-opacity-10 font-medium py-3 px-8 rounded-lg transition duration-200 inline-flex items-center justify-center"
             >
               Sign Up Free
-            </a>
+            </Link>
           </div>
         </div>
       </section>

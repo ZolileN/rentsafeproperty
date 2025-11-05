@@ -7,7 +7,9 @@ function App() {
     <AuthProvider>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <Router />
+        <main className="container mx-auto px-4 py-8">
+          <Router />
+        </main>
       </div>
     </AuthProvider>
   );

@@ -1,57 +1,57 @@
-import { useEffect, useState } from 'react';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { SignUpPage } from './pages/SignUpPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SearchPage } from './pages/SearchPage';
 import { NewPropertyPage } from './pages/NewPropertyPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
 
-// Custom navigation function for React SPA routing
-export function navigateTo(path: string) {
-  window.history.pushState({}, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
-
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+export function Router() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    navigateTo('/login');
-    return null;
-  }
-
-  return children;
-}
-
-export function Router() {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
-
+  // Handle protected routes
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
-    };
+    const publicPaths = ['/login', '/signup', '/'];
+    const isPublicPath = publicPaths.includes(location.pathname);
+    
+    if (!loading && !user && !isPublicPath) {
+      navigate('/login');
+    }
+  }, [user, loading, location, navigate]);
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  if (loading) {
+    return <div>Loading...</div>; // Or your loading spinner
+  }
 
-  const routes: Record<string, JSX.Element> = {
-    '/': <HomePage />,
-    '/signup': <SignUpPage />,
-    '/login': <LoginPage />,
-    '/dashboard': <ProtectedRoute><DashboardPage /></ProtectedRoute>,
-    '/search': <SearchPage />,
-    '/property/new': <ProtectedRoute><NewPropertyPage /></ProtectedRoute>,
-  };
-
-  return routes[currentPath] || <HomePage />;
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/search" element={<SearchPage />} />
+      
+      {/* Protected Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/property/new"
+        element={
+          <ProtectedRoute>
+            <NewPropertyPage />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
 }
