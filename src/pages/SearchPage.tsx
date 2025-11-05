@@ -1,12 +1,51 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Search, Filter, MapPin } from 'lucide-react';
-import { supabase, Property } from '../lib/supabase';
+import { Property } from '../lib/supabase';
+import { mockProperties } from '../utils/scraper';
 import { PropertyCard } from '../components/PropertyCard';
 
 export function SearchPage() {
   const [properties, setProperties] = useState<Property[]>([]);
+  
+  const fetchProperties = async (): Promise<Property[]> => {
+    // Map mock data to Property interface from supabase.ts
+    return mockProperties.map(prop => ({
+      id: prop.id,
+      landlord_id: 'mock-landlord-id', // Required by Property interface
+      title: prop.title,
+      description: prop.description || 'No description available',
+      address: prop.location, // Using location as address
+      city: prop.location.split(', ')[1] || prop.location, // Extract city from location
+      province: 'Gauteng', // Default value
+      postal_code: null,
+      property_type: prop.type.toLowerCase() as 'house' | 'apartment' | 'townhouse' | 'room',
+      bedrooms: prop.bedrooms,
+      bathrooms: prop.bedrooms > 1 ? 2 : 1, // Default to 2 bathrooms for properties with >1 bedroom
+      rent_amount: Number(prop.price.replace(/[^0-9]/g, '')), // Convert price string to number
+      deposit_amount: 0, // Default value
+      available_from: new Date().toISOString(),
+      is_verified: true,
+      verification_status: 'verified',
+      images: [prop.imageUrl],
+      amenities: [],
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+  };
+  
+  const loadProperties = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetchProperties();
+      setProperties(data);
+    } catch (error) {
+      console.error('Error loading properties:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
     city: '',
     propertyType: '',
@@ -19,77 +58,87 @@ export function SearchPage() {
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [highlightedCityIndex, setHighlightedCityIndex] = useState(-1);
 
+  const loadCities = useCallback(async () => {
+    // Mock cities from our property data
+    const cities = [
+      'Sandton, Johannesburg',
+      'Sea Point, Cape Town',
+      'Durban North, Durban',
+      'Rosebank, Johannesburg',
+      'Centurion, Pretoria',
+      'Umhlanga, Durban',
+      'Green Point, Cape Town',
+      'Bryanston, Johannesburg'
+    ];
+    setCities(Array.from(new Set(cities)).sort());
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const q = params.get('q') || '';
     const loc = params.get('location') || params.get('city') || '';
-    if (q) setSearchQuery(q);
     if (loc) setFilters(prev => ({ ...prev, city: loc }));
 
     loadProperties();
     loadCities();
-  }, [loadProperties]);
+  }, [loadProperties, loadCities]);
 
-  async function loadProperties() {
-    try {
-      let query = supabase
-        .from('properties')
-        .select('*')
-        .eq('is_active', true)
-        .eq('is_verified', true)
-        .order('created_at', { ascending: false });
-
-      if (filters.city) {
-        query = query.ilike('city', `%${filters.city}%`);
-      }
-      if (filters.propertyType) {
-        query = query.eq('property_type', filters.propertyType);
-      }
-      if (filters.minRent) {
-        query = query.gte('rent_amount', parseFloat(filters.minRent));
-      }
-      if (filters.maxRent) {
-        query = query.lte('rent_amount', parseFloat(filters.maxRent));
-      }
-      if (filters.bedrooms) {
-        query = query.gte('bedrooms', parseInt(filters.bedrooms));
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setProperties(data || []);
-    } catch (error) {
-      console.error('Error loading properties:', error);
-    } finally {
-      setLoading(false);
+  const applyFilters = useCallback((properties: Property[]) => {
+  return properties.filter(property => {
+    // Filter by city - using address and city fields
+    const location = `${property.address} ${property.city}`.toLowerCase();
+    if (filters.city && !location.includes(filters.city.toLowerCase())) {
+      return false;
     }
-  }
+    
+    // Filter by property type - using property_type
+    if (filters.propertyType && 
+        property.property_type.toLowerCase() !== filters.propertyType.toLowerCase()) {
+      return false;
+    }
+    
+    // Filter by price range - using rent_amount
+    if (filters.minRent && property.rent_amount < Number(filters.minRent)) {
+      return false;
+    }
+    if (filters.maxRent && property.rent_amount > Number(filters.maxRent)) {
+      return false;
+    }
+    
+    // Filter by number of bedrooms
+    if (filters.bedrooms && property.bedrooms < Number(filters.bedrooms)) {
+      return false;
+    }
+    
+    return true;
+  });
+}, [filters]);
+  
+  // Update properties when filters change
+  useEffect(() => {
+    const loadFilteredProperties = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchProperties();
+        const filtered = applyFilters(data);
+        setProperties(filtered);
+      } catch (error) {
+        console.error('Error loading properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadFilteredProperties();
+  }, [filters, applyFilters]);
 
   function handleSearch() {
     setLoading(true);
     loadProperties();
   }
 
-  async function loadCities() {
-    try {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('city')
-        .eq('is_active', true)
-        .eq('is_verified', true);
-      if (error) throw error;
-      const unique = Array.from(new Set((data || []).map((r: { city: string }) => r.city).filter(Boolean)));
-      unique.sort((a, b) => a.localeCompare(b));
-      setCities(unique);
-    } catch (error) {
-      console.error('Error loading cities:', error);
-    }
-  }
-
   function handleCityChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    setFilters({ ...filters, city: value });
+    setFilters(prev => ({ ...prev, city: value }));
 
     if (!value) {
       setCitySuggestions([]);
@@ -98,9 +147,16 @@ export function SearchPage() {
       return;
     }
 
+    const searchTerm = value.toLowerCase();
     const filtered = cities
-      .filter((c) => c.toLowerCase().startsWith(value.toLowerCase()))
-      .slice(0, 8);
+      .filter((c) => c.toLowerCase().includes(searchTerm))
+      .sort((a, b) => {
+        // Sort by how early the search term appears in the city name
+        const aIndex = a.toLowerCase().indexOf(searchTerm);
+        const bIndex = b.toLowerCase().indexOf(searchTerm);
+        return aIndex - bIndex || a.length - b.length;
+      })
+      .slice(0, 5);
 
     setCitySuggestions(filtered);
     setShowCitySuggestions(filtered.length > 0);
@@ -142,15 +198,36 @@ export function SearchPage() {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex items-center space-x-4 mb-4">
               <div className="flex-1">
-                <div className="relative">
+                <div className="relative flex-1">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
                     placeholder="Search by city or location..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={filters.city}
+                    onChange={handleCityChange}
+                    onKeyDown={handleCityKeyDown}
+                    onFocus={() => setShowCitySuggestions(citySuggestions.length > 0)}
+                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
+                    autoComplete="off"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
                   />
+                  {showCitySuggestions && citySuggestions.length > 0 && (
+                    <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                      {citySuggestions.map((city, idx) => (
+                        <li
+                          key={city}
+                          className={`px-4 py-3 cursor-pointer text-sm flex items-center ${idx === highlightedCityIndex ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleSelectCity(city);
+                          }}
+                        >
+                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
+                          {city}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               <button
@@ -163,40 +240,6 @@ export function SearchPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={filters.city}
-                    onChange={handleCityChange}
-                    onKeyDown={handleCityKeyDown}
-                    onFocus={() => setShowCitySuggestions(citySuggestions.length > 0)}
-                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
-                    autoComplete="off"
-                    placeholder="e.g., Cape Town"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
-                  />
-
-                  {showCitySuggestions && citySuggestions.length > 0 && (
-                    <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                      {citySuggestions.map((city, idx) => (
-                        <li
-                          key={city}
-                          className={`px-3 py-2 cursor-pointer text-sm ${idx === highlightedCityIndex ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            handleSelectCity(city);
-                          }}
-                        >
-                          {city}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
                 <select
@@ -297,3 +340,4 @@ export function SearchPage() {
     </div>
   );
 }
+
