@@ -17,7 +17,7 @@ export function SignUpPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !success) {
-      navigate('/dashboard'); // Update this line
+      navigate('/'); // Update this line
     }
   }, [user, success, navigate]); // Add navigate to dependencies
 
@@ -31,7 +31,7 @@ export function SignUpPage() {
       setSuccess(true);
       // Give a moment for the auth state to update
       setTimeout(() => {
-        navigate('/dashboard'); // Update this line
+        navigate('/'); // Update this line
       }, 500);
       // ... rest of your code
     } catch (error) {

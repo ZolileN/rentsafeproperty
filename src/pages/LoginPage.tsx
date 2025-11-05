@@ -12,7 +12,7 @@ export function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/');
     }
   }, [user, navigate]);
 
@@ -23,7 +23,7 @@ export function LoginPage() {
 
     try {
       await signIn(email, password);
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
     } finally {
