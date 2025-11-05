@@ -1,5 +1,6 @@
 import { MapPin, Bed, Bath, CheckCircle, Heart } from 'lucide-react';
 import { Property } from '../lib/supabase';
+import { Link } from 'react-router-dom';
 
 interface PropertyCardProps {
   property: Property;
@@ -18,6 +19,7 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
   };
 
   return (
+    <Link to={`/property/${property.id}`} className="block">
     <div
       className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-gray-200"
       onClick={onClick}
@@ -109,5 +111,6 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
         </div>
       </div>
     </div>
+    </Link>
   );
 }

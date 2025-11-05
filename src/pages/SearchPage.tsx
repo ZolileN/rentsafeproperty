@@ -61,15 +61,19 @@ export function SearchPage() {
   const loadCities = useCallback(async () => {
     // Mock cities from our property data
     const cities = [
-      'Sandton, Johannesburg',
-      'Sea Point, Cape Town',
-      'Durban North, Durban',
-      'Rosebank, Johannesburg',
-      'Centurion, Pretoria',
-      'Umhlanga, Durban',
-      'Green Point, Cape Town',
-      'Bryanston, Johannesburg'
-    ];
+  'Sandton, Johannesburg',
+  'Sea Point, Cape Town',
+  'Durban North, Durban',
+  'Rosebank, Johannesburg',
+  'Centurion, Pretoria',
+  'Umhlanga, Durban',
+  'Green Point, Cape Town',
+  'Bryanston, Johannesburg',  // Added comma here
+  'Fourways, Johannesburg',
+  'V&A Waterfront, Cape Town',
+  'Midrand, Johannesburg',
+  'Camps Bay, Cape Town'
+];
     setCities(Array.from(new Set(cities)).sort());
   }, []);
 

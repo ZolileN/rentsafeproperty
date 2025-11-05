@@ -8,6 +8,7 @@ import { NewPropertyPage } from './pages/NewPropertyPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { PropertyDetailsPage } from './pages/PropertyDetailsPage';
 
 export function Router() {
   const location = useLocation();
@@ -34,6 +35,7 @@ export function Router() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/search" element={<SearchPage />} />
+      <Route path="/property/:id" element={<PropertyDetailsPage />} />
       
       {/* Protected Routes */}
       <Route
