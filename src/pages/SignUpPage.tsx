@@ -44,7 +44,7 @@ export function SignUpPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <img src="/logo.png" alt="RentSafe Logo" className="h-16 w-auto" />
+            <img src="/logo.png" alt="RentSafe Logo" className="h-24 w-auto" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your RentSafe Account</h1>
           <p className="text-gray-600">Join our verified rental community</p>
