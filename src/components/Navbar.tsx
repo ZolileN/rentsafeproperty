@@ -144,13 +144,15 @@ export function Navbar() {
               <>
                 <NavItem icon={MessageSquare} text="Messages" onClick={() => navigate('/messages')} />
                 <NavItem icon={User} text="Dashboard" onClick={() => navigate('/dashboard')} />
-                <button 
-                  onClick={handleSignOut}
-                  className="flex items-center space-x-2 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-md transition"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span>Sign Out</span>
-                </button>
+                <div className="px-2 py-1">
+                  <button 
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-md transition-colors duration-200"
+                  >
+                    <LogOut className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium">Sign Out</span>
+                  </button>
+                </div>
               </>
             )}
           </div>
