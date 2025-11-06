@@ -1,28 +1,56 @@
-import { useEffect, useState, useCallback } from 'react';
-import { Search, Filter, MapPin } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Search, Filter, MapPin, X } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Property } from '../lib/supabase';
 import { mockProperties } from '../utils/scraper';
 import { PropertyCard } from '../components/PropertyCard';
 
+// Define the filter types for better type safety
+type SearchFilters = {
+  city: string;
+  propertyType: string;
+  minRent: string;
+  maxRent: string;
+  bedrooms: string;
+};
+
 export function SearchPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [properties, setProperties] = useState<Property[]>([]);
-  
+  const [loading, setLoading] = useState(true);
+  const [cities, setCities] = useState<string[]>([]);
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [highlightedCityIndex, setHighlightedCityIndex] = useState(-1);
+
+  // Initialize filters from URL parameters
+  const initialFilters = useMemo<SearchFilters>(() => ({
+    city: searchParams.get('city') || '',
+    propertyType: searchParams.get('propertyType') || '',
+    minRent: searchParams.get('minRent') || '',
+    maxRent: searchParams.get('maxRent') || '',
+    bedrooms: searchParams.get('bedrooms') || ''
+  }), [searchParams]);
+
+  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+
   const fetchProperties = async (): Promise<Property[]> => {
     // Map mock data to Property interface from supabase.ts
     return mockProperties.map(prop => ({
       id: prop.id,
-      landlord_id: 'mock-landlord-id', // Required by Property interface
+      landlord_id: 'mock-landlord-id',
       title: prop.title,
       description: prop.description || 'No description available',
-      address: prop.location, // Using location as address
-      city: prop.location.split(', ')[1] || prop.location, // Extract city from location
-      province: 'Gauteng', // Default value
+      address: prop.location,
+      city: prop.location.split(', ')[1] || prop.location,
+      province: 'Gauteng',
       postal_code: null,
       property_type: prop.type.toLowerCase() as 'house' | 'apartment' | 'townhouse' | 'room',
       bedrooms: prop.bedrooms,
-      bathrooms: prop.bedrooms > 1 ? 2 : 1, // Default to 2 bathrooms for properties with >1 bedroom
-      rent_amount: Number(prop.price.replace(/[^0-9]/g, '')), // Convert price string to number
-      deposit_amount: 0, // Default value
+      bathrooms: prop.bedrooms > 1 ? 2 : 1,
+      rent_amount: Number(prop.price.replace(/[^0-9]/g, '')),
+      deposit_amount: 0,
       available_from: new Date().toISOString(),
       is_verified: true,
       verification_status: 'verified',
@@ -33,7 +61,7 @@ export function SearchPage() {
       updated_at: new Date().toISOString()
     }));
   };
-  
+
   const loadProperties = useCallback(async () => {
     try {
       setLoading(true);
@@ -45,78 +73,76 @@ export function SearchPage() {
       setLoading(false);
     }
   }, []);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    city: '',
-    propertyType: '',
-    minRent: '',
-    maxRent: '',
-    bedrooms: '',
-  });
-  const [cities, setCities] = useState<string[]>([]);
-  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
-  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [highlightedCityIndex, setHighlightedCityIndex] = useState(-1);
 
   const loadCities = useCallback(async () => {
-    // Mock cities from our property data
     const cities = [
-  'Sandton, Johannesburg',
-  'Sea Point, Cape Town',
-  'Durban North, Durban',
-  'Rosebank, Johannesburg',
-  'Centurion, Pretoria',
-  'Umhlanga, Durban',
-  'Green Point, Cape Town',
-  'Bryanston, Johannesburg',  // Added comma here
-  'Fourways, Johannesburg',
-  'V&A Waterfront, Cape Town',
-  'Midrand, Johannesburg',
-  'Camps Bay, Cape Town'
-];
+      'Sandton, Johannesburg',
+      'Sea Point, Cape Town',
+      'Durban North, Durban',
+      'Rosebank, Johannesburg',
+      'Centurion, Pretoria',
+      'Umhlanga, Durban',
+      'Green Point, Cape Town',
+      'Bryanston, Johannesburg',
+      'Fourways, Johannesburg',
+      'V&A Waterfront, Cape Town',
+      'Midrand, Johannesburg',
+      'Camps Bay, Cape Town'
+    ];
     setCities(Array.from(new Set(cities)).sort());
   }, []);
 
+  // Update URL when filters change
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const loc = params.get('location') || params.get('city') || '';
-    if (loc) setFilters(prev => ({ ...prev, city: loc }));
+    const params = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      }
+    });
+    
+    // Update URL without causing a page reload
+    navigate(`?${params.toString()}`, { replace: true });
+  }, [filters, navigate]);
 
+  // Load initial data
+  useEffect(() => {
     loadProperties();
     loadCities();
   }, [loadProperties, loadCities]);
 
   const applyFilters = useCallback((properties: Property[]) => {
-  return properties.filter(property => {
-    // Filter by city - using address and city fields
-    const location = `${property.address} ${property.city}`.toLowerCase();
-    if (filters.city && !location.includes(filters.city.toLowerCase())) {
-      return false;
-    }
-    
-    // Filter by property type - using property_type
-    if (filters.propertyType && 
-        property.property_type.toLowerCase() !== filters.propertyType.toLowerCase()) {
-      return false;
-    }
-    
-    // Filter by price range - using rent_amount
-    if (filters.minRent && property.rent_amount < Number(filters.minRent)) {
-      return false;
-    }
-    if (filters.maxRent && property.rent_amount > Number(filters.maxRent)) {
-      return false;
-    }
-    
-    // Filter by number of bedrooms
-    if (filters.bedrooms && property.bedrooms < Number(filters.bedrooms)) {
-      return false;
-    }
-    
-    return true;
-  });
-}, [filters]);
-  
+    return properties.filter(property => {
+      // Filter by city - using address and city fields
+      const location = `${property.address} ${property.city}`.toLowerCase();
+      if (filters.city && !location.includes(filters.city.toLowerCase())) {
+        return false;
+      }
+      
+      // Filter by property type
+      if (filters.propertyType && 
+          property.property_type.toLowerCase() !== filters.propertyType.toLowerCase()) {
+        return false;
+      }
+      
+      // Filter by price range
+      if (filters.minRent && property.rent_amount < Number(filters.minRent)) {
+        return false;
+      }
+      if (filters.maxRent && property.rent_amount > Number(filters.maxRent)) {
+        return false;
+      }
+      
+      // Filter by number of bedrooms
+      if (filters.bedrooms && property.bedrooms < Number(filters.bedrooms)) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [filters]);
+
   // Update properties when filters change
   useEffect(() => {
     const loadFilteredProperties = async () => {
@@ -135,14 +161,29 @@ export function SearchPage() {
     loadFilteredProperties();
   }, [filters, applyFilters]);
 
-  function handleSearch() {
-    setLoading(true);
-    loadProperties();
-  }
+  const clearFilters = useCallback(() => {
+    setFilters({
+      city: '',
+      propertyType: '',
+      minRent: '',
+      maxRent: '',
+      bedrooms: '',
+    });
+  }, []);
+
+  // Check if any filters are active
+  const hasActiveFilters = useMemo(() => {
+    return Object.values(filters).some(value => Boolean(value));
+  }, [filters]);
 
   function handleCityChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     setFilters(prev => ({ ...prev, city: value }));
+    
+    // Reset other city-related states
+    setShowCitySuggestions(false);
+    setCitySuggestions([]);
+    setHighlightedCityIndex(-1);
 
     if (!value) {
       setCitySuggestions([]);
@@ -168,7 +209,7 @@ export function SearchPage() {
   }
 
   function handleSelectCity(city: string) {
-    setFilters({ ...filters, city });
+    setFilters(prev => ({ ...prev, city }));
     setShowCitySuggestions(false);
     setCitySuggestions([]);
     setHighlightedCityIndex(-1);
@@ -196,119 +237,140 @@ export function SearchPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Find Your Perfect Home</h1>
+        <div className="mb-8 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Find Your Perfect Home</h1>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+            >
+              <X size={16} />
+              <span>Clear All Filters</span>
+            </button>
+          )}
+        </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="flex-1">
-                <div className="relative flex-1">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        {/* Search and Filter Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* City Search */}
+            <div className="relative">
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="city"
+                  value={filters.city}
+                  onChange={handleCityChange}
+                  onKeyDown={handleCityKeyDown}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Search by city or area"
+                />
+                {showCitySuggestions && (
+                  <ul className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                    {citySuggestions.map((city, index) => (
+                      <li
+                        key={city}
+                        className={`${
+                          index === highlightedCityIndex ? 'bg-gray-100' : ''
+                        } text-gray-900 cursor-default select-none relative py-2 pl-3 pr-9 hover:bg-gray-100`}
+                        onClick={() => handleSelectCity(city)}
+                      >
+                        {city}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {/* Property Type */}
+            <div>
+              <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700 mb-1">
+                Property Type
+              </label>
+              <select
+                id="propertyType"
+                value={filters.propertyType}
+                onChange={(e) => setFilters(prev => ({ ...prev, propertyType: e.target.value }))}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+              >
+                <option value="">All Types</option>
+                <option value="apartment">Apartment</option>
+                <option value="house">House</option>
+                <option value="townhouse">Townhouse</option>
+                <option value="room">Room</option>
+              </select>
+            </div>
+
+            {/* Price Range */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label htmlFor="minRent" className="block text-sm font-medium text-gray-700 mb-1">
+                  Min Price
+                </label>
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">R</span>
+                  </div>
                   <input
-                    type="text"
-                    placeholder="Search by city or location..."
-                    value={filters.city}
-                    onChange={handleCityChange}
-                    onKeyDown={handleCityKeyDown}
-                    onFocus={() => setShowCitySuggestions(citySuggestions.length > 0)}
-                    onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
-                    autoComplete="off"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
+                    type="number"
+                    id="minRent"
+                    value={filters.minRent}
+                    onChange={(e) => setFilters(prev => ({ ...prev, minRent: e.target.value }))}
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-3 sm:text-sm border-gray-300 rounded-md"
+                    placeholder="Min"
                   />
-                  {showCitySuggestions && citySuggestions.length > 0 && (
-                    <ul className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
-                      {citySuggestions.map((city, idx) => (
-                        <li
-                          key={city}
-                          className={`px-4 py-3 cursor-pointer text-sm flex items-center ${idx === highlightedCityIndex ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            handleSelectCity(city);
-                          }}
-                        >
-                          <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                          {city}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
               </div>
-              <button
-                onClick={handleSearch}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center space-x-2 transition"
-              >
-                <Search className="w-5 h-5" />
-                <span>Search</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
-                <select
-                  value={filters.propertyType}
-                  onChange={(e) => setFilters({ ...filters, propertyType: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
-                >
-                  <option value="">All Types</option>
-                  <option value="house">House</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="townhouse">Townhouse</option>
-                  <option value="room">Room</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Min Rent</label>
-                <input
-                  type="number"
-                  value={filters.minRent}
-                  onChange={(e) => setFilters({ ...filters, minRent: e.target.value })}
-                  placeholder="Min"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max Rent</label>
-                <input
-                  type="number"
-                  value={filters.maxRent}
-                  onChange={(e) => setFilters({ ...filters, maxRent: e.target.value })}
-                  placeholder="Max"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
-                <select
-                  value={filters.bedrooms}
-                  onChange={(e) => setFilters({ ...filters, bedrooms: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
-                >
-                  <option value="">Any</option>
-                  <option value="1">1+</option>
-                  <option value="2">2+</option>
-                  <option value="3">3+</option>
-                  <option value="4">4+</option>
-                </select>
+                <label htmlFor="maxRent" className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Price
+                </label>
+                <div className="relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">R</span>
+                  </div>
+                  <input
+                    type="number"
+                    id="maxRent"
+                    value={filters.maxRent}
+                    onChange={(e) => setFilters(prev => ({ ...prev, maxRent: e.target.value }))}
+                    className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-3 sm:text-sm border-gray-300 rounded-md"
+                    placeholder="Max"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={handleSearch}
-                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium"
+            {/* Bedrooms */}
+            <div>
+              <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700 mb-1">
+                Bedrooms
+              </label>
+              <select
+                id="bedrooms"
+                value={filters.bedrooms}
+                onChange={(e) => setFilters(prev => ({ ...prev, bedrooms: e.target.value }))}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
               >
-                <Filter className="w-4 h-4" />
-                <span>Apply Filters</span>
-              </button>
+                <option value="">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="4">4+</option>
+                <option value="5">5+</option>
+              </select>
             </div>
           </div>
         </div>
 
+        {/* Results Section */}
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -327,7 +389,7 @@ export function SearchPage() {
                   <PropertyCard
                     key={property.id}
                     property={property}
-                    onClick={() => window.location.href = `/property/${property.id}`}
+                    onClick={() => { window.location.href = `/property/${property.id}`; }}
                   />
                 ))}
               </div>
@@ -344,4 +406,3 @@ export function SearchPage() {
     </div>
   );
 }
-

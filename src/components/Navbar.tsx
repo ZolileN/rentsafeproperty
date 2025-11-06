@@ -1,4 +1,4 @@
-import { Home, Search, MessageSquare, User, LogOut, Menu, X } from 'lucide-react';
+import { Home, Search, MessageSquare, User, LogOut, Menu, X, LucideIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -18,7 +18,7 @@ export function Navbar() {
     }
   };
 
-  const NavItem = ({ icon: Icon, text, onClick }: { icon: any, text: string, onClick: () => void }) => (
+  const NavItem = ({ icon: Icon, text, onClick }: { icon: LucideIcon, text: string, onClick: () => void }) => (
     <button
       onClick={() => {
         onClick();
