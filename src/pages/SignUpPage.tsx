@@ -43,25 +43,30 @@ export function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <img src="/logo.png" alt="RentSafe Logo" className="h-24 w-auto" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your RentSafe Account</h1>
-          <p className="text-gray-600">Join our verified rental community</p>
-        </div>
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
+          Create your account
+        </h2>
+      </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-gray-800 py-8 px-4 shadow-lg sm:rounded-lg sm:px-10 border border-gray-700">
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <img src="/logo.png" alt="RentSafe Logo" className="h-24 w-auto" />
+            </div>
+            <h1 className="text-3xl font-bold text-white mb-2">Create an Account</h1>
+            <p className="text-gray-400">Join RentSafe today</p>
+          </div>
           <div className="flex gap-4 mb-6">
             <button
               type="button"
               onClick={() => setRole('tenant')}
               className={`flex-1 py-3 px-4 rounded-lg border-2 transition ${
                 role === 'tenant'
-                  ? 'border-blue-600 bg-blue-50 text-blue-600'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  ? 'border-emerald-400 bg-emerald-400/20 text-emerald-400'
+                  : 'border-gray-600 text-gray-400 hover:border-gray-500'
               }`}
             >
               <User className="w-5 h-5 mx-auto mb-1" />
@@ -72,8 +77,8 @@ export function SignUpPage() {
               onClick={() => setRole('landlord')}
               className={`flex-1 py-3 px-4 rounded-lg border-2 transition ${
                 role === 'landlord'
-                  ? 'border-blue-600 bg-blue-50 text-blue-600'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  ? 'border-emerald-400 bg-emerald-400/20 text-emerald-400'
+                  : 'border-gray-600 text-gray-400 hover:border-gray-500'
               }`}
             >
               <Building className="w-5 h-5 mx-auto mb-1" />
@@ -83,7 +88,7 @@ export function SignUpPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-1">
                 Full Name
               </label>
               <input
@@ -92,13 +97,13 @@ export function SignUpPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition text-gray-300"
                 placeholder="John Doe"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
                 Email Address
               </label>
               <input
@@ -107,13 +112,13 @@ export function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
-                placeholder="john@example.com"
+                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition text-gray-300"
+                placeholder="jackson@example.com"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
                 Password
               </label>
               <input
@@ -123,13 +128,13 @@ export function SignUpPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
+                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition text-gray-300"
                 placeholder="At least 6 characters"
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+              <div className="bg-red-900/30 text-red-300 p-3 rounded-lg text-sm border border-red-800">
                 {error}
               </div>
             )}
@@ -143,24 +148,24 @@ export function SignUpPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-emerald-400 text-white py-3 rounded-lg font-semibold hover:bg-emerald-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-400">
               Already have an account?{' '}
-              <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                Sign In
+              <a href="/login" className="text-emerald-400 hover:text-emerald-300 font-medium">
+                Sign in
               </a>
             </p>
           </div>
         </div>
 
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
+        <div className="mt-6 bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <p className="text-sm text-gray-300">
             <strong>Next step:</strong> After creating your account, you'll need to complete identity verification to access all features.
           </p>
         </div>

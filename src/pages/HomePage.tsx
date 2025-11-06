@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom'; 
-import { supabase, type Property } from '../lib/supabase'; // Add this importimport { supabase, type Property } from '../lib/supabase';
+import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight, Star, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { supabase, type Property } from '../lib/supabase';
 import { PropertyCard } from '../components/PropertyCard';
 
 export function HomePage() {
@@ -20,113 +20,73 @@ export function HomePage() {
   }, []);
 
   async function loadFeaturedProperties() {
-  try {
-    // First try to fetch from Supabase
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .eq('is_active', true)
-      .eq('is_verified', true)
-      .order('created_at', { ascending: false })
-      .limit(3);
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('is_active', true)
+        .eq('is_verified', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
 
-    if (error) throw error;
-    
-    if (data && data.length > 0) {
-      setFeaturedProperties(data);
-    } else {
-      // If no data from Supabase, use mock data
-      const mockData = [
-        {
-          id: '1',
-          title: 'Modern 3 Bedroom House in Sandton',
-          rent_amount: 25000,
-          address: '123 Main St, Sandton',
-          city: 'Johannesburg',
-          property_type: 'house',
-          bedrooms: 3,
-          bathrooms: 2,
-          images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format'],
-          is_verified: true,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          landlord_id: 'mock-landlord-1',
-          description: 'Beautiful modern house with open plan living areas and a spacious garden.',
-          province: 'Gauteng',
-          postal_code: '2196',
-          deposit_amount: 50000,
-          available_from: new Date().toISOString(),
-          verification_status: 'verified',
-          amenities: ['Swimming Pool', 'Garden', 'Garage', 'Security']
-        },
-        {
-          id: '2',
-          title: 'Luxury 2 Bedroom Apartment in Sea Point',
-          rent_amount: 32000,
-          address: '45 Beach Road, Sea Point',
-          city: 'Cape Town',
-          property_type: 'apartment',
-          bedrooms: 2,
-          bathrooms: 2,
-          images: ['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format'],
-          is_verified: true,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          landlord_id: 'mock-landlord-2',
-          description: 'Stunning sea views from this modern apartment with premium finishes.',
-          province: 'Western Cape',
-          postal_code: '8005',
-          deposit_amount: 64000,
-          available_from: new Date().toISOString(),
-          verification_status: 'verified',
-          amenities: ['Sea View', 'Balcony', 'Secure Parking', 'Gym']
-        },
-        {
-          id: '3',
-          title: 'Spacious 4 Bedroom Family Home in Umhlanga',
-          rent_amount: 45000,
-          address: '12 Lagoon Drive, Umhlanga Rocks',
-          city: 'Durban',
-          property_type: 'house',
-          bedrooms: 4,
-          bathrooms: 3,
-          images: ['https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&auto=format'],
-          is_verified: true,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          landlord_id: 'mock-landlord-3',
-          description: 'Luxurious family home with modern amenities and beautiful sea views.',
-          province: 'KwaZulu-Natal',
-          postal_code: '4319',
-          deposit_amount: 90000,
-          available_from: new Date().toISOString(),
-          verification_status: 'verified',
-          amenities: ['Swimming Pool', 'Garden', 'Braai Area', 'Study']
-        }
-      ] as Property[];
+      if (error) throw error;
       
-      setFeaturedProperties(mockData);
-    }
-  } catch (error) {
-    console.error('Error loading properties, using mock data instead:', error);
-    // The mock data is already set in the else block above
-  } finally {
-    setLoading(false);
+      if (data && data.length > 0) {
+        setFeaturedProperties(data);
+      } else {
+        // Fallback mock data
+        // Inside the loadFeaturedProperties function, replace the fallback mock data with:
+setFeaturedProperties([
+  {
+    id: '1',
+    title: 'Modern 3 Bedroom House in Sandton',
+    rent_amount: 25000,
+    address: '123 Main St, Sandton',
+    city: 'Johannesburg',
+    property_type: 'house',
+    bedrooms: 3,
+    bathrooms: 2,
+    images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format'],
+    is_verified: true,
+    created_at: new Date().toISOString(),
+    is_active: true
+  },
+  {
+    id: '2',
+    title: 'Luxury 2 Bedroom Apartment in Sea Point',
+    rent_amount: 18000,
+    address: '45 Beach Road, Sea Point',
+    city: 'Cape Town',
+    property_type: 'apartment',
+    bedrooms: 2,
+    bathrooms: 2,
+    images: ['https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format'],
+    is_verified: true,
+    created_at: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+    is_active: true
+  },
+  {
+    id: '3',
+    title: 'Spacious Family Home in Umhlanga',
+    rent_amount: 32000,
+    address: '12 Lagoon Drive, Umhlanga Rocks',
+    city: 'Durban',
+    property_type: 'house',
+    bedrooms: 4,
+    bathrooms: 3,
+    images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format'],
+    is_verified: true,
+    created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+    is_active: true
   }
-}
-
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (searchQuery.trim() || location.trim()) {
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('q', searchQuery);
-      if (location) params.append('location', location);
-      window.location.href = `/search?${params.toString()}`;
+]);
+      }
+    } catch (error) {
+      console.error('Error loading properties:', error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   async function loadCities() {
     try {
@@ -146,68 +106,77 @@ export function HomePage() {
     }
   }
 
-  function handleLocationChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim() || location.trim()) {
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('q', searchQuery);
+      if (location) params.append('location', location);
+      window.location.href = `/search?${params.toString()}`;
+    }
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setLocation(value);
-
-    if (!value) {
+    if (value) {
+      const filtered = cities.filter(city => 
+        city.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
       setSuggestions([]);
       setShowSuggestions(false);
-      setHighlightedIndex(-1);
-      return;
     }
+  };
 
-    const filtered = cities
-      .filter((c) => c.toLowerCase().startsWith(value.toLowerCase()))
-      .slice(0, 8);
-
-    setSuggestions(filtered);
-    setShowSuggestions(filtered.length > 0);
-    setHighlightedIndex(-1);
-  }
-
-  function handleSelectSuggestion(city: string) {
-    setLocation(city);
-    setShowSuggestions(false);
-    setSuggestions([]);
-    setHighlightedIndex(-1);
-  }
-
-  function handleLocationKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!showSuggestions) return;
-
+  const handleLocationKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlightedIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+      setHighlightedIndex(prev => 
+        prev < suggestions.length - 1 ? prev + 1 : prev
+      );
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setHighlightedIndex((prev) => Math.max(prev - 1, 0));
-    } else if (e.key === 'Enter') {
-      if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
-        e.preventDefault();
-        handleSelectSuggestion(suggestions[highlightedIndex]);
-      }
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false);
+      setHighlightedIndex(prev => (prev > 0 ? prev - 1 : -1));
+    } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+      e.preventDefault();
+      handleSelectSuggestion(suggestions[highlightedIndex]);
     }
-  }
+  };
+
+  const handleSelectSuggestion = (city: string) => {
+    setLocation(city);
+    setShowSuggestions(false);
+    setHighlightedIndex(-1);
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-black">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-deep-blue-900 to-deep-blue-800 text-white py-16 md:py-24 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              Find Your Perfect Home with Confidence
+      <div className="relative w-full bg-gray-900 overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="/hero.png"
+            alt="Beautiful home"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-gray-900/50" />
+        </div>
+
+        <div className="relative w-full max-w-7xl mx-auto px-4 py-24 sm:py-32 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Find Your Perfect Home
             </h1>
-            <p className="text-lg md:text-xl text-blue-100 mb-8">
-              Verified listings. Secure transactions. Exceptional service.
+            <p className="mt-4 max-w-3xl mx-auto text-xl text-gray-200">
+              Discover the best properties for rent in South Africa
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="bg-white rounded-xl shadow-xl overflow-hidden max-w-4xl mx-auto">
+          {/* Search Form */}
+          <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden max-w-4xl mx-auto border border-gray-700">
             <form onSubmit={handleSearch} className="flex flex-col md:flex-row">
               <div className="flex-1 p-2">
                 <label htmlFor="search" className="sr-only">Search properties</label>
@@ -219,13 +188,14 @@ export function HomePage() {
                     type="text"
                     id="search"
                     value={searchQuery}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-4 border-0 focus:ring-2 focus:ring-deep-blue-500 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none"
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-4 bg-gray-800/50 border-0 focus:ring-2 focus:ring-emerald-500 rounded-lg text-white placeholder-gray-400 focus:outline-none"
                     placeholder="Search by property type, features..."
                   />
                 </div>
               </div>
-              <div className="flex-1 p-2 border-t md:border-t-0 md:border-l border-gray-100">
+              
+              <div className="flex-1 p-2 border-t md:border-t-0 md:border-l border-gray-700">
                 <label htmlFor="location" className="sr-only">Location</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -240,16 +210,18 @@ export function HomePage() {
                     onFocus={() => setShowSuggestions(suggestions.length > 0)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                     autoComplete="off"
-                    className="block w-full pl-10 pr-3 py-4 border-0 focus:ring-2 focus:ring-deep-blue-500 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none"
+                    className="block w-full pl-10 pr-3 py-4 bg-gray-800/50 border-0 focus:ring-2 focus:ring-emerald-500 rounded-lg text-white placeholder-gray-400 focus:outline-none"
                     placeholder="Location"
                   />
 
                   {showSuggestions && suggestions.length > 0 && (
-                    <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                    <ul className="absolute z-20 mt-2 w-full bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-60 overflow-auto">
                       {suggestions.map((city, idx) => (
                         <li
                           key={city}
-                          className={`px-3 py-2 cursor-pointer text-sm ${idx === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-50'}`}
+                          className={`px-3 py-2 cursor-pointer text-sm ${
+                            idx === highlightedIndex ? 'bg-emerald-600 text-white' : 'hover:bg-gray-700 text-gray-200'
+                          }`}
                           onMouseDown={(e) => {
                             e.preventDefault();
                             handleSelectSuggestion(city);
@@ -262,6 +234,7 @@ export function HomePage() {
                   )}
                 </div>
               </div>
+              
               <div className="p-2">
                 <button
                   type="submit"
@@ -274,15 +247,48 @@ export function HomePage() {
             </form>
           </div>
         </div>
+      </div>
+
+      {/* Featured Properties */}
+      <section className="py-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white">Featured Properties</h2>
+            <p className="mt-4 text-xl text-gray-200">Hand-picked properties just for you</p>
+          </div>
+
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
+              <p className="mt-4 text-gray-600">Loading properties...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredProperties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          )}
+
+          <div className="mt-12 text-center">
+            <Link
+              to="/search"
+              className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-4 px-8 rounded-lg transition duration-200 flex items-center justify-center"
+            >
+              View all properties
+              <ChevronRight className="ml-2 -mr-1 w-5 h-5" />
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-16 bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose RentSafe?</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We&apos;re committed to making your rental experience safe, simple, and stress-free.
+            <h2 className="text-3xl font-bold text-white">Why Choose RentSafe?</h2>
+            <p className="mt-4 text-xl text-gray-200">
+              We're committed to making your rental experience safe, simple, and stress-free.
             </p>
           </div>
           
@@ -295,85 +301,58 @@ export function HomePage() {
               },
               {
                 icon: <CheckCircle className="h-8 w-8 text-emerald-600" />,
-                title: "Secure Payments",
-                description: "Your transactions are protected with bank-level security and escrow services."
+                title: "Trusted Landlords",
+                description: "We work with verified landlords who meet our strict quality standards."
               },
               {
                 icon: <Home className="h-8 w-8 text-emerald-600" />,
-                title: "Trusted Landlords",
-                description: "We vet all property owners to ensure you&apos;re working with reliable professionals."
+                title: "Wide Selection",
+                description: "Find the perfect home from our extensive collection of properties."
               }
             ].map((feature, index) => (
-              <div key={index} className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <div key={index} className="bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-50 mb-4 mx-auto">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-lg font-medium text-white text-center mb-2">{feature.title}</h3>
+                <p className="text-gray-200 text-center">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Properties */}
-      <section className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">Featured Properties</h2>
-              <p className="text-gray-600 mt-2">Verified and ready for you to move in</p>
-            </div>
-            <a href="/search" className="text-deep-blue-700 hover:text-deep-blue-900 font-medium flex items-center">
-              View all <ChevronRight className="ml-1 h-5 w-5" />
-            </a>
-          </div>
-
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-gray-100 rounded-xl h-80 animate-pulse"></div>
-              ))}
-            </div>
-          ) : featuredProperties.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProperties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Home className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No properties available</h3>
-              <p className="mt-1 text-gray-500">Check back later for new listings</p>
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* CTA Section */}
-      <section className="bg-deep-blue-900 text-white py-16">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl font-bold mb-6">Ready to find your perfect home?</h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of happy renters who found their perfect home with RentSafe.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link 
-              to="/search"
-              className="bg-white text-deep-blue-900 hover:bg-gray-100 font-medium py-3 px-8 rounded-lg transition duration-200 inline-flex items-center justify-center"
-            >
-              Browse Properties
-            </Link>
-            <Link
-              to="/signup"
-              className="border-2 border-white text-white hover:bg-white hover:bg-opacity-10 font-medium py-3 px-8 rounded-lg transition duration-200 inline-flex items-center justify-center"
-            >
-              Sign Up Free
-            </Link>
-          </div>
-        </div>
-      </section>
+<section className="relative bg-gray-900">
+  {/* Background Image */}
+  <div className="absolute inset-0 opacity-30">
+    <img
+      src="/featured.png"
+      alt="Featured properties"
+      className="w-full h-full object-cover"
+    />
+  </div>
+  
+  <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:py-24 lg:px-8 text-center">
+  <div className="max-w-3xl mx-auto">
+    <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
+      <span className="block">Ready to move in?</span>
+    </h2>
+    <p className="mt-4 text-xl text-gray-200">
+      Browse through our verified listings and find the perfect place to call home.
+    </p>
+    <div className="mt-12">
+      <Link
+        to="/search"
+        className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-4 px-8 rounded-lg transition duration-200 flex items-center justify-center"
+      >
+        Browse properties
+        <ChevronRight className="ml-2 -mr-1 w-5 h-5" />
+      </Link>
+    </div>
+  </div>
+</div>
+</section>
     </div>
   );
 }

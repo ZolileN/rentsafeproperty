@@ -1,6 +1,6 @@
 import { MapPin, Bed, Bath, CheckCircle, Heart } from 'lucide-react';
 import { Property } from '../lib/supabase';
-import { Link } from 'react-router-dom';
+// Remove the Link import since it's not being used
 
 interface PropertyCardProps {
   property: Property;
@@ -8,7 +8,7 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property, onClick }: PropertyCardProps) {
-  const imageUrl = property.images[0] || 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800';
+  const imageUrl = property.images[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
   
   const formatPrice = (amount: number) => {
     return new Intl.NumberFormat('en-ZA', {
@@ -19,98 +19,60 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
   };
 
   return (
-    <Link to={`/property/${property.id}`} className="block">
-    <div
-      className="group bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-gray-200"
+    <div 
+      className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-700"
       onClick={onClick}
     >
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-56">
         <img
           src={imageUrl}
           alt={property.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover"
         />
-        
-        {/* Favorite Button */}
-        <button 
-          className="absolute top-3 right-3 p-2 bg-white/90 rounded-full shadow-md hover:bg-white transition-colors duration-200"
-          onClick={(e) => {
-            e.stopPropagation();
-            // Handle favorite functionality
-          }}
-        >
-          <Heart className="w-5 h-5 text-gray-600 hover:text-red-500 fill-transparent hover:fill-red-500 transition-colors" />
-        </button>
-        
-        {/* Verified Badge */}
-        {property.is_verified && (
-          <div className="absolute top-3 left-3 bg-emerald-600 text-white px-3 py-1 rounded-full flex items-center space-x-1 text-xs font-medium shadow-md">
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span>Verified</span>
-          </div>
-        )}
-        
-        {/* Price Tag */}
-        <div className="absolute bottom-3 left-3 bg-deep-blue-900/90 text-white px-3 py-1.5 rounded-md font-semibold text-sm backdrop-blur-sm">
-          {formatPrice(property.rent_amount)}<span className="text-xs font-normal">/month</span>
-        </div>
-      </div>
-
-      <div className="p-5">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2">
-            {property.title}
-          </h3>
-        </div>
-
-        <div className="flex items-center text-gray-600 text-sm mb-3">
-          <MapPin className="w-4 h-4 mr-1.5 text-deep-blue-700" />
-          <span className="line-clamp-1">
-            {property.address || `${property.city}, ${property.province}`}
-          </span>
-        </div>
-
-        <div className="flex items-center space-x-4 text-gray-700 text-sm mb-4">
-          <div className="flex items-center space-x-1.5">
-            <Bed className="w-4.5 h-4.5 text-deep-blue-700" />
-            <span>{property.bedrooms} {property.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <Bath className="w-4 h-4 text-deep-blue-700" />
-            <span>{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
-          </div>
-          <span className="capitalize text-gray-500 bg-gray-100 px-2 py-0.5 rounded text-xs">
-            {property.property_type}
-          </span>
-        </div>
-
-        <p className="text-gray-600 text-sm line-clamp-2 mb-4">
-          {property.description}
-        </p>
-
-        <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-          <p className="text-sm text-gray-500">
-            <span className="font-medium text-deep-blue-900">Available</span> • {new Date(property.available_from).toLocaleDateString('en-ZA', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric'
-            })}
-          </p>
+        <div className="absolute top-3 right-3">
           <button 
-            className="text-deep-blue-700 hover:text-deep-blue-900 text-sm font-medium flex items-center"
+            className="p-2 bg-gray-800/80 rounded-full shadow-md hover:bg-gray-700 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
-              // Handle view details
+              // Handle favorite functionality
             }}
           >
-            View details
-            <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            <Heart className="w-5 h-5 text-gray-300 hover:text-red-500" />
           </button>
+        </div>
+        {property.is_verified && (
+          <div className="absolute top-3 left-3 bg-green-600 text-white text-xs px-2 py-1 rounded-full flex items-center">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Verified
+          </div>
+        )}
+      </div>
+      
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <h3 className="text-lg font-semibold text-white">{property.title}</h3>
+          <span className="text-lg font-bold text-emerald-500">
+            {formatPrice(property.rent_amount)}
+            <span className="text-sm font-normal text-gray-400">/month</span>
+          </span>
+        </div>
+        
+        <p className="text-gray-300 text-sm mt-1 flex items-center">
+          <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+          {property.address}
+        </p>
+        
+        <div className="flex items-center mt-4 text-sm text-gray-400">
+          <span className="flex items-center mr-4">
+            <Bed className="w-4 h-4 mr-1" />
+            {property.bedrooms} beds
+          </span>
+          <span className="flex items-center">
+            <Bath className="w-4 h-4 mr-1" />
+            {property.bathrooms} baths
+          </span>
         </div>
       </div>
     </div>
-    </Link>
   );
 }

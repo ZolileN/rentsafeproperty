@@ -24,7 +24,7 @@ export function Navbar() {
         onClick();
         setMobileMenuOpen(false);
       }}
-      className="flex items-center space-x-2 w-full px-4 py-3 text-left text-gray-700 hover:bg-gray-100 rounded-md transition"
+      className="flex items-center space-x-2 w-full px-4 py-3 text-left text-gray-200 hover:bg-gray-800 hover:ring-2 hover:ring-emerald-500/50 hover:ring-offset-2 hover:ring-offset-gray-900 rounded-md transition-all duration-200"
     >
       <Icon className="w-5 h-5" />
       <span>{text}</span>
@@ -32,7 +32,7 @@ export function Navbar() {
   );
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="bg-gray-900 shadow-sm border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and mobile menu button */}
@@ -65,11 +65,11 @@ export function Navbar() {
                       e.stopPropagation();
                       handleSignOut();
                     }}
-                    className="flex items-center space-x-1 text-gray-700 hover:text-red-600 transition"
-                    title="Sign out"
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition"
+                    title="Log out"
                   >
-                    <LogOut className="w-5 h-5" />
-                    <span className="hidden sm:inline">Sign Out</span>
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
                   </button>
                 </div>
               </>
@@ -77,15 +77,15 @@ export function Navbar() {
               <div className="flex items-center space-x-4 ml-4">
                 <button 
                   onClick={() => navigate('/login')}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-deep-blue-700 transition"
+                  className="px-4 py-2 text-sm font-medium text-gray-200 hover:text-emerald-500 transition"
                 >
-                  Sign In
+                  Login
                 </button>
                 <button 
                   onClick={() => navigate('/signup')}
-                  className="px-4 py-2 text-sm font-medium text-white bg-deep-blue-700 rounded-md hover:bg-deep-blue-800 transition"
+                  className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition"
                 >
-                  Get Started
+                  Register
                 </button>
               </div>
             )}
@@ -97,26 +97,29 @@ export function Navbar() {
               <div className="flex space-x-2 mr-3">
                 <button 
                   onClick={() => navigate('/login')}
-                  className="px-3 py-1.5 text-xs font-medium text-gray-700 hover:text-deep-blue-700 transition"
+                  className="px-3 py-1.5 text-xs font-medium text-gray-200 hover:text-emerald-500 transition"
                 >
-                  Sign In
+                  Login
                 </button>
                 <button 
                   onClick={() => navigate('/signup')}
-                  className="px-3 py-1.5 text-xs font-medium text-white bg-deep-blue-700 rounded hover:bg-deep-blue-800 transition"
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 rounded hover:bg-emerald-700 transition"
                 >
-                  Get Started
+                  Register
                 </button>
               </div>
             )}
             {user && (
-              <span className="text-sm font-medium text-gray-700 mr-3">
-                {user.full_name || user.email?.split('@')[0]}
-              </span>
+              <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-1.5 rounded-md">
+                <User className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm font-medium text-white">
+                  {user.full_name || user.email?.split('@')[0]}
+                </span>
+              </div>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-300 hover:text-emerald-500 hover:bg-gray-800 focus:outline-none"
             >
               {mobileMenuOpen ? (
                 <X className="block h-6 w-6" />
@@ -130,12 +133,12 @@ export function Navbar() {
 
       {/* Mobile Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div className="md:hidden bg-gray-900 border-t border-gray-800">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {user && (
-              <div className="px-4 py-3 border-b border-gray-100">
-                <p className="text-sm font-medium text-gray-900">{user.full_name || user.email}</p>
-                {user.full_name && <p className="text-xs text-gray-500">{user.email}</p>}
+              <div className="px-4 py-3 border-b border-gray-800">
+                <p className="text-sm font-medium text-white">{user.full_name || user.email}</p>
+                {user.full_name && <p className="text-xs text-gray-400">{user.email}</p>}
               </div>
             )}
             <NavItem icon={Home} text="Home" onClick={() => navigate('/')} />
@@ -147,10 +150,10 @@ export function Navbar() {
                 <div className="px-2 py-1">
                   <button 
                     onClick={handleSignOut}
-                    className="flex items-center space-x-3 w-full px-4 py-3 text-left text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-md transition-colors duration-200"
+                    className="flex items-center space-x-3 w-full px-4 py-3 text-left text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors duration-200"
                   >
                     <LogOut className="w-5 h-5 flex-shrink-0" />
-                    <span className="font-medium">Sign Out</span>
+                    <span className="font-medium">Logout</span>
                   </button>
                 </div>
               </>
