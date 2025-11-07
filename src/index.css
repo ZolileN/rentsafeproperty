@@ -53,3 +53,40 @@ select::-ms-expand {
 .bg-gradient-blue {
   background: linear-gradient(to right, #2563eb, #1d4ed8);
 }
+
+/* Enhanced placeholder visibility */
+input::placeholder,
+textarea::placeholder {
+  transition: all 0.15s ease-in-out;
+  opacity: 0.7;
+  color: #6b7280; /* gray-500 */
+}
+
+/* Hide placeholder when focused or when there's input */
+input:focus::placeholder,
+textarea:focus::placeholder,
+input:not(:placeholder-shown)::placeholder,
+textarea:not(:placeholder-shown)::placeholder {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+/* For dark mode inputs */
+.dark input:focus::placeholder,
+.dark input:not(:placeholder-shown)::placeholder {
+  background-color: #1f2937; /* gray-800 */
+}
+
+/* Ensure the placeholder doesn't overlap with the input value */
+input:not(:placeholder-shown) + label,
+textarea:not(:placeholder-shown) + label {
+  transform: translateY(-1.5rem) scale(0.85);
+  color: #4b5563; /* gray-600 */
+}
+
+/* Smooth transition for labels */
+label {
+  transition: all 0.2s ease-in-out;
+  transform-origin: left center;
+}

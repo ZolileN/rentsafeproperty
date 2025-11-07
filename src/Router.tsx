@@ -1,14 +1,16 @@
+// src/Router.tsx
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
-import { HomePage } from './pages/HomePage';
+import HomePage from './pages/HomePage';
 import { SignUpPage } from './pages/SignUpPage';
 import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
+import DashboardPage from './pages/DashboardPage';
 import { SearchPage } from './pages/SearchPage';
-import { NewPropertyPage } from './pages/NewPropertyPage';
+import NewPropertyPage from './pages/NewPropertyPage';
+import { PropertyDetailsPage } from './pages/PropertyDetailsPage';
+import { VerificationPage } from './pages/verification/VerificationPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
-import { PropertyDetailsPage } from './pages/PropertyDetailsPage';
 
 export function Router() {
   const location = useLocation();
@@ -51,6 +53,14 @@ export function Router() {
         element={
           <ProtectedRoute>
             <NewPropertyPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/verify-identity"
+        element={
+          <ProtectedRoute>
+            <VerificationPage />
           </ProtectedRoute>
         }
       />

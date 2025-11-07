@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Check, X, MapPin, DollarSign, Calendar, CheckCircle } from 'lucide-react';
+import { Check, X, MapPin, Calendar, CheckCircle } from 'lucide-react';
 
 export function NewPropertyPage() {
   const { user } = useAuth();
@@ -134,7 +134,7 @@ export function NewPropertyPage() {
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                     placeholder="Modern 2-Bedroom Apartment in City Center"
                     required
                   />
@@ -148,7 +148,7 @@ export function NewPropertyPage() {
                     name="property_type"
                     value={formData.property_type}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                     required
                   >
                     {propertyTypes.map(type => (
@@ -169,7 +169,7 @@ export function NewPropertyPage() {
                     min="1"
                     value={formData.bedrooms}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                     required
                   />
                 </div>
@@ -184,7 +184,7 @@ export function NewPropertyPage() {
                     min="1"
                     value={formData.bathrooms}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                     required
                   />
                 </div>
@@ -194,15 +194,15 @@ export function NewPropertyPage() {
                     Rent Amount (ZAR)
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-5 w-5 text-gray-400" />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-700 font-medium">
+                      R
                     </div>
                     <input
                       type="number"
                       name="rent_amount"
                       value={formData.rent_amount}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       placeholder="e.g. 8500"
                       required
                     />
@@ -222,7 +222,7 @@ export function NewPropertyPage() {
                       name="available_from"
                       value={formData.available_from}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       required
                     />
                   </div>
@@ -264,7 +264,7 @@ export function NewPropertyPage() {
                       name="address"
                       value={formData.address}
                       onChange={handleChange}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       placeholder="123 Main Street, Suburb"
                       required
                     />
@@ -281,7 +281,7 @@ export function NewPropertyPage() {
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       placeholder="e.g. Cape Town"
                       required
                     />
@@ -295,7 +295,7 @@ export function NewPropertyPage() {
                       name="province"
                       value={formData.province}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       required
                     >
                       <option value="">Select Province</option>
@@ -316,7 +316,7 @@ export function NewPropertyPage() {
                       name="postal_code"
                       value={formData.postal_code}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       placeholder="e.g. 8001"
                     />
                   </div>
@@ -489,3 +489,5 @@ export function NewPropertyPage() {
     </div>
   );
 }
+
+export default NewPropertyPage;

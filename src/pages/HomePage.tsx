@@ -356,3 +356,5 @@ setFeaturedProperties([
     </div>
   );
 }
+
+export default HomePage;

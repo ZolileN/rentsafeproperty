@@ -1,12 +1,45 @@
-import { Home, Search, MessageSquare, User, LogOut, Menu, X, LucideIcon } from 'lucide-react';
+import { Home, Search, MessageSquare, User, LogOut, Menu, X, LucideIcon, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface NavItemProps {
+  icon: LucideIcon;
+  text: string;
+  onClick: () => void;
+  badge?: 'pending' | 'rejected' | null;
+}
 
 export function Navbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadVerificationStatus = async () => {
+      if (user?.role === 'tenant') {
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('verification_status')
+            .eq('id', user.id)
+            .single();
+          
+          if (data?.verification_status) {
+            setVerificationStatus(data.verification_status);
+          }
+        } catch (error) {
+          console.error('Error loading verification status:', error);
+        }
+      }
+    };
+
+    if (user) {
+      loadVerificationStatus();
+    }
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -18,16 +51,35 @@ export function Navbar() {
     }
   };
 
-  const NavItem = ({ icon: Icon, text, onClick }: { icon: LucideIcon, text: string, onClick: () => void }) => (
+  const NavItem = ({ icon: Icon, text, onClick, badge }: NavItemProps) => (
     <button
       onClick={() => {
         onClick();
         setMobileMenuOpen(false);
       }}
-      className="flex items-center space-x-2 w-full px-4 py-3 text-left text-gray-200 hover:bg-gray-800 hover:ring-2 hover:ring-emerald-500/50 hover:ring-offset-2 hover:ring-offset-gray-900 rounded-md transition-all duration-200"
+      className="flex items-center justify-between w-full px-4 py-3 text-left text-gray-200 hover:bg-gray-800 hover:ring-2 hover:ring-emerald-500/50 hover:ring-offset-2 hover:ring-offset-gray-900 rounded-md transition-all duration-200 relative"
     >
-      <Icon className="w-5 h-5" />
-      <span>{text}</span>
+      <div className="flex items-center space-x-2">
+        <Icon className="w-5 h-5" />
+        <span>{text}</span>
+      </div>
+      {badge && (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          badge === 'pending' 
+            ? 'bg-yellow-100 text-yellow-800' 
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {badge === 'pending' ? 'Verifying' : 'Action Needed'}
+          {badge === 'pending' ? (
+            <span className="ml-1.5 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-yellow-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+            </span>
+          ) : (
+            <AlertCircle className="ml-1 w-3 h-3" />
+          )}
+        </span>
+      )}
     </button>
   );
 
@@ -55,7 +107,12 @@ export function Navbar() {
             {user ? (
               <>
                 <NavItem icon={MessageSquare} text="Messages" onClick={() => navigate('/messages')} />
-                <NavItem icon={User} text="Dashboard" onClick={() => navigate('/dashboard')} />
+                <NavItem 
+                  icon={User} 
+                  text="Dashboard" 
+                  onClick={() => navigate('/dashboard')}
+                  badge={verificationStatus === 'pending' ? 'pending' : verificationStatus === 'rejected' ? 'rejected' : null}
+                />
                 <div className="flex items-center space-x-4 ml-2">
                   <span className="text-sm font-medium text-gray-700">
                     {user.full_name || user.email?.split('@')[0]}
@@ -146,7 +203,18 @@ export function Navbar() {
             {user && (
               <>
                 <NavItem icon={MessageSquare} text="Messages" onClick={() => navigate('/messages')} />
-                <NavItem icon={User} text="Dashboard" onClick={() => navigate('/dashboard')} />
+                <NavItem 
+                  icon={User} 
+                  text="Dashboard" 
+                  onClick={() => navigate('/dashboard')}
+                  badge={verificationStatus === 'pending' ? 'pending' : verificationStatus === 'rejected' ? 'rejected' : null}
+                />
+                <NavItem 
+                  icon={User} 
+                  text="Dashboard" 
+                  onClick={() => navigate('/dashboard')}
+                  badge={verificationStatus === 'pending' ? 'pending' : verificationStatus === 'rejected' ? 'rejected' : null}
+                />
                 <div className="px-2 py-1">
                   <button 
                     onClick={handleSignOut}
