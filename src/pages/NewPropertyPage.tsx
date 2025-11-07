@@ -67,12 +67,52 @@ export function NewPropertyPage() {
     }));
   };
 
-  const nextStep = () => setCurrentStep(prev => prev + 1);
-  const prevStep = () => setCurrentStep(prev => prev - 1);
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1: // Basic Info
+        if (!formData.title || !formData.property_type || !formData.bedrooms || 
+            !formData.bathrooms || !formData.rent_amount || !formData.available_from) {
+          setError('Please fill in all required fields');
+          return false;
+        }
+        return true;
+      case 2: // Location
+        if (!formData.address || !formData.city || !formData.province) {
+          setError('Please fill in all required location details');
+          return false;
+        }
+        return true;
+      case 3: // Details
+        if (!formData.description) {
+          setError('Please provide a property description');
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
 
-  async function handleSubmit(e: React.FormEvent) {
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setError('');
+      setCurrentStep(prev => Math.min(prev + 1, 3));
+    }
+  };
+
+  const prevStep = () => {
+    setError('');
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (!user) return;
+
+    // Validate the final step before submission
+    if (!validateStep(currentStep)) {
+      return;
+    }
 
     setError('');
     setLoading(true);
@@ -116,6 +156,60 @@ export function NewPropertyPage() {
       </div>
     );
   }
+
+  const renderNavigation = ({ currentStep, loading, onPrev }: {
+    currentStep: number;
+    loading: boolean;
+    onPrev: () => void;
+  }) => (
+    <div className="flex justify-between mt-8">
+      <div className="flex-1">
+        <button
+          type="button"
+          onClick={() => currentStep === 1 ? window.location.href = '/dashboard' : onPrev()}
+          className="px-6 py-2.5 border border-green-600 text-green-700 font-medium rounded-lg hover:bg-green-50 transition-colors flex items-center"
+        >
+          <X className="w-4 h-4 mr-2" />
+          {currentStep === 1 ? 'Cancel' : 'Back'}
+        </button>
+      </div>
+      
+      <div className="flex-1 flex justify-end">
+        {(currentStep < 3) ? (
+          <button
+            type="submit"
+            className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center"
+          >
+            Next
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center disabled:opacity-70"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Submit Property
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 
   const renderStep = () => {
     switch (currentStep) {
@@ -230,18 +324,6 @@ export function NewPropertyPage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4">
-              <button
-                type="button"
-                onClick={nextStep}
-                className="px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors flex items-center"
-              >
-                Next
-                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
           </div>
         );
 
@@ -324,28 +406,6 @@ export function NewPropertyPage() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
-              <button
-                type="button"
-                onClick={prevStep}
-                className="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={nextStep}
-                className="px-6 py-2.5 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-colors flex items-center"
-              >
-                Next
-                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
           </div>
         );
 
@@ -364,7 +424,7 @@ export function NewPropertyPage() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                   placeholder="Describe your property in detail..."
                   required
                 />
@@ -380,17 +440,17 @@ export function NewPropertyPage() {
                       <button
                         type="button"
                         onClick={() => toggleAmenity(amenity.id)}
-                        className={`flex items-center justify-center w-5 h-5 rounded border ${
+                        className={`flex items-center justify-center w-5 h-5 rounded border-2 ${
                           formData.amenities.includes(amenity.id)
-                            ? 'bg-primary border-primary'
-                            : 'border-gray-300'
-                        }`}
+                            ? 'bg-green-600 border-green-600 shadow-md'
+                            : 'border-gray-300 hover:border-green-400'
+                        } transition-all duration-200`}
                       >
                         {formData.amenities.includes(amenity.id) && (
                           <Check className="w-3.5 h-3.5 text-white" />
                         )}
                       </button>
-                      <span className="ml-2 text-sm text-gray-700">
+                      <span className="ml-2 text-sm text-gray-900 font-medium">
                         {amenity.label}
                       </span>
                     </div>
@@ -399,38 +459,6 @@ export function NewPropertyPage() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
-              <button
-                type="button"
-                onClick={prevStep}
-                className="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2.5 bg-secondary text-white font-medium rounded-lg hover:bg-secondary-dark transition-colors flex items-center disabled:opacity-70"
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Submit Property
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         );
 
@@ -481,8 +509,20 @@ export function NewPropertyPage() {
             </div>
           )}
           
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (currentStep === 3) {
+              handleSubmit(e);
+            } else {
+              nextStep();
+            }
+          }}>
             {renderStep()}
+            {renderNavigation({
+              currentStep,
+              loading,
+              onPrev: prevStep
+            })}
           </form>
         </div>
       </div>
