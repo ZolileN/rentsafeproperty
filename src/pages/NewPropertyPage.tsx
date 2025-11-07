@@ -18,9 +18,12 @@ export function NewPropertyPage() {
     property_type: 'apartment',
     bedrooms: 1,
     bathrooms: 1,
+    ensuite: 0,
+    floor_size: '',
     rent_amount: '',
     deposit_amount: '',
     available_from: '',
+    lease_term: '12',
     amenities: [] as string[],
   });
 
@@ -30,6 +33,13 @@ export function NewPropertyPage() {
     { value: 'townhouse', label: 'Townhouse' },
     { value: 'studio', label: 'Studio' },
     { value: 'cottage', label: 'Cottage' },
+  ];
+
+  const leaseTerms = [
+    { value: '3', label: '3 months' },
+    { value: '6', label: '6 months' },
+    { value: '9', label: '9 months' },
+    { value: '12', label: '12 months' },
   ];
 
   const provinces = [
@@ -71,7 +81,8 @@ export function NewPropertyPage() {
     switch (step) {
       case 1: // Basic Info
         if (!formData.title || !formData.property_type || !formData.bedrooms || 
-            !formData.bathrooms || !formData.rent_amount || !formData.available_from) {
+            !formData.bathrooms || !formData.floor_size || !formData.rent_amount || 
+            !formData.available_from || !formData.lease_term) {
           setError('Please fill in all required fields');
           return false;
         }
@@ -285,6 +296,37 @@ export function NewPropertyPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    En-suite
+                  </label>
+                  <input
+                    type="number"
+                    name="ensuite"
+                    min="0"
+                    max={formData.bedrooms}
+                    value={formData.ensuite}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Floor Size (m²)
+                  </label>
+                  <input
+                    type="number"
+                    name="floor_size"
+                    min="1"
+                    value={formData.floor_size}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                    placeholder="e.g. 75"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Rent Amount (ZAR)
                   </label>
                   <div className="relative">
@@ -299,6 +341,25 @@ export function NewPropertyPage() {
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                       placeholder="e.g. 8500"
                       required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Deposit (ZAR)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-700 font-medium">
+                      R
+                    </div>
+                    <input
+                      type="number"
+                      name="deposit_amount"
+                      value={formData.deposit_amount}
+                      onChange={handleChange}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                      placeholder="e.g. 8500"
                     />
                   </div>
                 </div>
@@ -320,6 +381,25 @@ export function NewPropertyPage() {
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Lease Term
+                  </label>
+                  <select
+                    name="lease_term"
+                    value={formData.lease_term}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                    required
+                  >
+                    {leaseTerms.map(term => (
+                      <option key={term.value} value={term.value}>
+                        {term.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
