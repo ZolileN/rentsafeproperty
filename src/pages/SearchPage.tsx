@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Search, MapPin, Filter, Home as HomeIcon, Building2, Building, X } from 'lucide-react';import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Search, MapPin, Filter, Home as HomeIcon, Building2, Building, X } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { Property } from '../lib/supabase';
-import { mockProperties } from '../utils/scraper';
 import { PropertyCard } from '../components/PropertyCard';
 
 const propertyTypes = [
@@ -39,30 +40,20 @@ export function SearchPage() {
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
 
   const fetchProperties = async (): Promise<Property[]> => {
-    // Map mock data to Property interface from supabase.ts
-    return mockProperties.map(prop => ({
-      id: prop.id,
-      landlord_id: 'mock-landlord-id',
-      title: prop.title,
-      description: prop.description || 'No description available',
-      address: prop.location,
-      city: prop.location.split(', ')[1] || prop.location,
-      province: 'Gauteng',
-      postal_code: null,
-      property_type: prop.type.toLowerCase() as 'house' | 'apartment' | 'townhouse' | 'room',
-      bedrooms: prop.bedrooms,
-      bathrooms: prop.bedrooms > 1 ? 2 : 1,
-      rent_amount: Number(prop.price.replace(/[^0-9]/g, '')),
-      deposit_amount: 0,
-      available_from: new Date().toISOString(),
-      is_verified: true,
-      verification_status: 'verified',
-      images: [prop.imageUrl],
-      amenities: [],
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
+    try {
+      const { data: properties, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      return properties || [];
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      return [];
+    }
   };
 
   const loadProperties = useCallback(async () => {
@@ -70,6 +61,27 @@ export function SearchPage() {
       setLoading(true);
       const data = await fetchProperties();
       setProperties(data);
+      
+      // Set up real-time subscription for property changes
+      const subscription = supabase
+        .channel('properties')
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'properties' 
+          }, 
+          (payload) => {
+            // Refresh properties when there are changes
+            fetchProperties().then(data => setProperties(data));
+          }
+        )
+        .subscribe();
+      
+      // Cleanup subscription on unmount
+      return () => {
+        subscription.unsubscribe();
+      };
     } catch (error) {
       console.error('Error loading properties:', error);
     } finally {
@@ -185,37 +197,6 @@ export function SearchPage() {
     return Object.values(filters).some(value => Boolean(value));
   }, [filters]);
 
-  function handleCityChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value;
-    setFilters(prev => ({ ...prev, city: value }));
-    
-    // Reset other city-related states
-    setShowCitySuggestions(false);
-    setCitySuggestions([]);
-    setHighlightedCityIndex(-1);
-
-    if (!value) {
-      setCitySuggestions([]);
-      setShowCitySuggestions(false);
-      setHighlightedCityIndex(-1);
-      return;
-    }
-
-    const searchTerm = value.toLowerCase();
-    const filtered = cities
-      .filter((c) => c.toLowerCase().includes(searchTerm))
-      .sort((a, b) => {
-        // Sort by how early the search term appears in the city name
-        const aIndex = a.toLowerCase().indexOf(searchTerm);
-        const bIndex = b.toLowerCase().indexOf(searchTerm);
-        return aIndex - bIndex || a.length - b.length;
-      })
-      .slice(0, 5);
-
-    setCitySuggestions(filtered);
-    setShowCitySuggestions(filtered.length > 0);
-    setHighlightedCityIndex(-1);
-  }
 
   function handleSelectCity(city: string) {
     setFilters(prev => ({ ...prev, city }));

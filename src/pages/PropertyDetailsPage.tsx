@@ -29,6 +29,7 @@ import {
   ShowerHead,
   Bell,
   Flame,
+  Calendar
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -47,6 +48,7 @@ interface Property {
   floor_size?: string;
   lease_term?: number;
   ensuite?: number;
+  parking?: number;
   images: string[];
   amenities: string[];
   is_verified: boolean;
@@ -204,41 +206,88 @@ useEffect(() => {
             </div>
 
             {/* Property features */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:flex gap-4 mt-6">
-              <div className="flex items-center">
-                <Building className="w-5 h-5 text-gray-700 mr-2 flex-shrink-0" />
-                <span className="text-gray-800 font-medium">{property.property_type}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
+              {/* Property Type */}
+              <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                <Building className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-500">Type</p>
+                  <span className="text-gray-800 font-medium capitalize">{property.property_type}</span>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Bed className="w-5 h-5 text-gray-700 mr-2 flex-shrink-0" />
-                <span className="text-gray-800 font-medium">{property.bedrooms} {property.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
+
+              {/* Bedrooms */}
+              <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                <Bed className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-500">Bedrooms</p>
+                  <span className="text-gray-800 font-medium">{property.bedrooms} {property.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
+                </div>
               </div>
-              <div className="flex items-center">
-                <Bath className="w-5 h-5 text-gray-700 mr-2 flex-shrink-0" />
-                <span className="text-gray-800 font-medium">{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
+
+              {/* Bathrooms */}
+              <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                <Bath className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-gray-500">Bathrooms</p>
+                  <span className="text-gray-800 font-medium">{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
+                </div>
               </div>
-              {property.ensuite && property.ensuite > 0 && (
-                <div className="flex items-center">
-                  <ShowerHead className="w-5 h-5 text-gray-700 mr-2 flex-shrink-0" />
-                  <span className="text-gray-800 font-medium">{property.ensuite} En-suite</span>
+
+              {/* En-suite */}
+              {property.ensuite !== undefined && property.ensuite > 0 && (
+                <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                  <ShowerHead className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500">En-suite</p>
+                    <span className="text-gray-800 font-medium">{property.ensuite}</span>
+                  </div>
                 </div>
               )}
+
+              {/* Floor Size */}
               {property.floor_size && (
-                <div className="flex items-center">
-                  <Ruler className="w-5 h-5 text-gray-700 mr-2 flex-shrink-0" />
-                  <span className="text-gray-800 font-medium">{property.floor_size} m²</span>
+                <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                  <Ruler className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500">Floor Size</p>
+                    <span className="text-gray-800 font-medium">{property.floor_size} m²</span>
+                  </div>
                 </div>
               )}
-              {property.lease_term && (
-                <div className="flex items-center">
-                  <Clock className="w-5 h-5 text-gray-700 mr-2 flex-shrink-0" />
-                  <span className="text-gray-800 font-medium">{property.lease_term} months</span>
+
+              {/* Lease Term */}
+              {property.lease_term !== undefined && (
+                <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                  <Calendar className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500">Lease Term</p>
+                    <span className="text-gray-800 font-medium">{property.lease_term} months</span>
+                  </div>
                 </div>
               )}
+
+              {/* Parking */}
+              {property.parking !== undefined && property.parking > 0 && (
+                <div className="flex items-center bg-gray-50 px-4 py-3 rounded-lg">
+                  <ParkingCircle className="w-5 h-5 text-emerald-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500">Parking</p>
+                    <span className="text-gray-800 font-medium">
+                      {property.parking} {property.parking === 1 ? 'Space' : 'Spaces'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Verified Badge */}
               {property.is_verified && (
-                <div className="flex items-center text-green-600">
-                  <Star className="w-5 h-5 fill-current mr-1" />
-                  <span>Verified</span>
+                <div className="flex items-center bg-green-50 px-4 py-3 rounded-lg border border-green-100">
+                  <CheckCircle className="w-5 h-5 text-green-600 mr-2 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-green-600">Status</p>
+                    <span className="text-green-700 font-medium">Verified Property</span>
+                  </div>
                 </div>
               )}
             </div>
