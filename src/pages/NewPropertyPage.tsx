@@ -6,8 +6,11 @@ import { Check, X, MapPin, Calendar, CheckCircle } from 'lucide-react';
 export function NewPropertyPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<{url: string, isUploading: boolean, isUploaded: boolean}[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -66,6 +69,101 @@ export function NewPropertyPage() {
         : [...prev.amenities, amenity]
     }));
   };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!user) {
+        setError('Please sign in to upload images');
+        return;
+      }
+      
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      
+      // Create preview URLs for selected files
+      const newPreviews = Array.from(files).map(file => ({
+        url: URL.createObjectURL(file),
+        isUploading: false,
+        isUploaded: false
+      }));
+      
+      // Store the current length for proper indexing
+      const currentLength = previewUrls.length;
+      setPreviewUrls(prev => [...prev, ...newPreviews]);
+      setUploading(true);
+      
+      // Upload each file and update status
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+        const previewIndex = currentLength + index;
+        
+        // Update status to uploading
+        setPreviewUrls(prev => {
+          const newPrev = [...prev];
+          if (newPrev[previewIndex]) {
+            newPrev[previewIndex] = { ...newPrev[previewIndex], isUploading: true };
+          }
+          return newPrev;
+        });
+        
+        try {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+          const filePath = `${user.id}/${fileName}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('property-images')
+            .upload(filePath, file);
+            
+          if (uploadError) throw uploadError;
+          
+          const { data: { publicUrl } } = supabase.storage
+            .from('property-images')
+            .getPublicUrl(filePath);
+            
+          // Update status to uploaded
+          setPreviewUrls(prev => {
+            const newPrev = [...prev];
+            if (newPrev[previewIndex]) {
+              newPrev[previewIndex] = { 
+                ...newPrev[previewIndex], 
+                isUploading: false, 
+                isUploaded: true, 
+                url: publicUrl 
+              };
+            }
+            return newPrev;
+          });
+          
+          return publicUrl;
+        } catch (err) {
+          // If upload fails, mark as not uploaded
+          setPreviewUrls(prev => {
+            const newPrev = [...prev];
+            if (newPrev[previewIndex]) {
+              newPrev[previewIndex] = { 
+                ...newPrev[previewIndex], 
+                isUploading: false,
+                isUploaded: false
+              };
+            }
+            return newPrev;
+          });
+          throw err;
+        }
+      });
+      
+      const urls = await Promise.all(uploadPromises);
+      setImageUrls(prev => [...prev, ...urls]);
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      setError('Error uploading images. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+      };
+      const removeImage = (index: number) => {
+      setImageUrls(prev => prev.filter((_, i) => i !== index));
+      };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -133,7 +231,8 @@ export function NewPropertyPage() {
         landlord_id: user.id,
         ...formData,
         rent_amount: parseFloat(formData.rent_amount),
-        deposit_amount: parseFloat(formData.deposit_amount),
+        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        images: imageUrls,
         is_active: true,
         is_verified: false,
         verification_status: 'pending',
@@ -142,6 +241,7 @@ export function NewPropertyPage() {
       if (insertError) throw insertError;
       window.location.href = '/dashboard';
     } catch (err) {
+      console.error('Error creating property:', err);
       setError(err instanceof Error ? err.message : 'Failed to create property');
     } finally {
       setLoading(false);
@@ -362,6 +462,97 @@ export function NewPropertyPage() {
                       placeholder="e.g. 8500"
                     />
                   </div>
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Property Images
+                  </label>
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                    <div className="space-y-1 text-center">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        stroke="currentColor"
+                        fill="none"
+                        viewBox="0 0 48 48"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <div className="flex flex-col items-center space-y-2">
+                        <label
+                          htmlFor="file-upload"
+                          className="relative cursor-pointer bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center space-x-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span>Upload Images</span>
+                          <input
+                            id="file-upload"
+                            name="file-upload"
+                            type="file"
+                            className="sr-only"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploading}
+                          />
+                        </label>
+                        <p className="text-sm text-gray-500">or drag and drop images here</p>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">Supports: PNG, JPG, GIF • Max 10MB per image</p>
+                    </div>
+                  </div>
+                  
+                  {/* Image previews */}
+                  {(previewUrls.length > 0 || imageUrls.length > 0) && (
+                    <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {previewUrls.map((item, index) => (
+                        <div key={index} className="relative group">
+                          <div className="relative h-32 w-full">
+                            <img
+                              src={item.url}
+                              alt={`Property preview ${index + 1}`}
+                              className={`h-full w-full object-cover rounded-lg ${
+                                item.isUploading ? 'opacity-60' : 'opacity-100'
+                              }`}
+                            />
+                            {item.isUploading && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-lg">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                              </div>
+                            )}
+                            {item.isUploaded && (
+                              <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                                <Check className="w-3 h-3 inline mr-1" />
+                                Uploaded
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+                              // Also remove from imageUrls if it exists there
+                              if (index < imageUrls.length) {
+                                setImageUrls(prev => prev.filter((_, i) => i !== index));
+                              }
+                            }}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {uploading && <p className="mt-2 text-sm text-gray-500">Uploading images...</p>}
                 </div>
 
                 <div>
