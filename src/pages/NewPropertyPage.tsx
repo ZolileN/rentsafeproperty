@@ -216,7 +216,11 @@ export function NewPropertyPage() {
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!user) return;
+    
+    if (!user) {
+      setError('User not authenticated');
+      return;
+    }
 
     // Validate the final step before submission
     if (!validateStep(currentStep)) {
@@ -227,22 +231,46 @@ export function NewPropertyPage() {
     setLoading(true);
 
     try {
-      const { error: insertError } = await supabase.from('properties').insert({
+      // Prepare the property data with proper type conversion
+      const propertyData = {
         landlord_id: user.id,
-        ...formData,
-        rent_amount: parseFloat(formData.rent_amount),
-        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        province: formData.province,
+        postal_code: formData.postal_code?.trim() || null,
+        property_type: formData.property_type,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        rent_amount: parseFloat(formData.rent_amount.toString()),
+        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount.toString()) : null,
+        available_from: formData.available_from,
+        amenities: formData.amenities,
         images: imageUrls,
         is_active: true,
         is_verified: false,
         verification_status: 'pending',
-      });
+      };
 
-      if (insertError) throw insertError;
+      console.log('Submitting property data:', propertyData);
+
+      const { data, error: insertError } = await supabase
+        .from('properties')
+        .insert(propertyData)
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Database error:', insertError);
+        throw new Error(insertError.message || 'Failed to create property');
+      }
+
+      console.log('Property created successfully:', data);
       window.location.href = '/dashboard';
     } catch (err) {
       console.error('Error creating property:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create property');
+      setError(err instanceof Error ? err.message : 'An unknown error occurred while creating the property');
     } finally {
       setLoading(false);
     }
