@@ -2,15 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { AlertCircle, AlertTriangle, Home, FileText, Plus, Search } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Home, FileText, Plus, Search, MapPin } from 'lucide-react';
 import { VerificationStatus } from '../types/database.types';
 
 interface Property {
   id: string;
   title: string;
+  description: string;
   address: string;
   rent_amount: number;
   images?: string[];
+  bedrooms?: number;
+  bathrooms?: number;
   // Add other property fields as needed
 }
 interface Application {
@@ -193,10 +196,27 @@ const DashboardPage = () => {
                 )}
               </div>
               <div className="p-4">
-                <h3 className="font-semibold text-lg mb-1">{property.title}</h3>
-                <p className="text-gray-600 text-sm mb-2">{property.address}</p>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">R{property.rent_amount}/mo</span>
+                <h3 className="font-semibold text-lg mb-1 line-clamp-1 text-gray-800">
+                  {property.title}
+                </h3>                
+                <p className="text-gray-600 text-sm mb-1 flex items-start">
+                  <MapPin className="w-4 h-4 mt-0.5 mr-1 text-gray-400 flex-shrink-0" />
+                  <span className="line-clamp-1">{property.address}</span>
+                </p>
+                {property.description && (
+                  <p className="text-gray-500 text-sm mt-2 line-clamp-2">
+                    {property.description}
+                  </p>
+                )}
+                <div className="flex justify-between items-center mt-3">
+                  <span className="font-bold text-emerald-600">
+                    {new Intl.NumberFormat('en-ZA', {
+                      style: 'currency',
+                      currency: 'ZAR',
+                      maximumFractionDigits: 0
+                    }).format(property.rent_amount)}
+                    <span className="text-sm font-normal text-gray-500">/month</span>
+                  </span>
                   <Link
                     to={`/property/${property.id}`}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"

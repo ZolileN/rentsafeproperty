@@ -49,27 +49,35 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
       </div>
       
       <div className="p-4">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-semibold text-white">{property.title}</h3>
-          <span className="text-lg font-bold text-emerald-500">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="text-lg font-semibold text-black line-clamp-2 min-h-[2.5rem] overflow-hidden">
+            {property.title}
+          </h3>
+          <span className="text-lg font-bold text-emerald-500 whitespace-nowrap pl-2">
             {formatPrice(property.rent_amount)}
             <span className="text-sm font-normal text-gray-400">/month</span>
           </span>
         </div>
         
-        <p className="text-gray-300 text-sm mt-1 flex items-center">
-          <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-          {property.address}
+        <p className="text-black text-sm mt-2 flex items-start">
+          <MapPin className="w-4 h-4 mt-0.5 mr-1.5 text-black flex-shrink-0" />
+          <span className="line-clamp-1">{property.address}</span>
         </p>
         
-        <div className="flex items-center mt-4 text-sm text-gray-400">
+        {property.description && (
+          <p className="text-black text-sm mt-3 line-clamp-2 leading-relaxed">
+            {property.description}
+          </p>
+        )}
+        
+        <div className="flex items-center mt-4 text-sm text-black">
           <span className="flex items-center mr-4">
-            <Bed className="w-4 h-4 mr-1" />
+            <Bed className="w-4 h-4 mr-1.5 text-black" />
             {property.bedrooms} beds
           </span>
           <span className="flex items-center">
-            <Bath className="w-4 h-4 mr-1" />
-            {property.bathrooms} baths
+            <Bath className="w-4 h-4 mr-1.5 text-black" />
+            {property.bedrooms || 0 > 1 ? 'baths' : 'bath'}
           </span>
         </div>
       </div>

@@ -22,6 +22,7 @@ export function NewPropertyPage() {
     bedrooms: 1,
     bathrooms: 1,
     ensuite: 0,
+    parking: 0,
     floor_size: '',
     rent_amount: '',
     deposit_amount: '',
@@ -59,6 +60,9 @@ export function NewPropertyPage() {
     { id: 'pool', label: 'Pool' },
     { id: 'gym', label: 'Gym' },
     { id: 'pet_friendly', label: 'Pet Friendly' },
+    { id: 'furnished', label: 'Furnished' },
+    { id: 'alarm', label: 'Alarm' },
+    { id: 'braai_place', label: 'Braai Place' }
   ];
 
   const toggleAmenity = (amenity: string) => {
@@ -160,9 +164,6 @@ export function NewPropertyPage() {
     } finally {
       setUploading(false);
     }
-      };
-      const removeImage = (index: number) => {
-      setImageUrls(prev => prev.filter((_, i) => i !== index));
       };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -435,6 +436,21 @@ export function NewPropertyPage() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
                     placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Parking
+                  </label>
+                  <input
+                    type="number"
+                    name="parking"
+                    min="0"
+                    value={formData.parking}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                    required
                   />
                 </div>
 
