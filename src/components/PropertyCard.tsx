@@ -20,7 +20,7 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
 
   return (
     <div 
-      className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-700"
+      className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-700"
       onClick={onClick}
     >
       <div className="relative h-56">
@@ -31,7 +31,7 @@ export function PropertyCard({ property, onClick }: PropertyCardProps) {
         />
         <div className="absolute top-3 right-3">
           <button 
-            className="p-2 bg-gray-800/80 rounded-full shadow-md hover:bg-gray-700 transition-colors"
+            className="p-2 bg-white/80 rounded-full shadow-md hover:bg-gray-700 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               // Handle favorite functionality
