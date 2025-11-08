@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight, Star, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase, type Property } from '../lib/supabase';
 import { PropertyCard } from '../components/PropertyCard';
 
 export function HomePage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
   const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
@@ -265,7 +267,13 @@ setFeaturedProperties([
           ) : (
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {featuredProperties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
+                <div 
+                  key={property.id} 
+                  onClick={() => navigate(`/properties/${property.id}`)}
+                  className="cursor-pointer"
+                >
+                  <PropertyCard property={property} />
+                </div>
               ))}
             </div>
           )}
