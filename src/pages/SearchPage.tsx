@@ -52,6 +52,27 @@ export function SearchPage() {
         .select('*')
         .eq('is_active', true);
       
+      // Apply search filters from URL parameters
+      if (filters.city) {
+        query = query.ilike('city', `%${filters.city}%`);
+      }
+      
+      if (filters.propertyType) {
+        query = query.eq('property_type', filters.propertyType);
+      }
+      
+      if (filters.minRent) {
+        query = query.gte('rent_amount', Number(filters.minRent));
+      }
+      
+      if (filters.maxRent) {
+        query = query.lte('rent_amount', Number(filters.maxRent));
+      }
+      
+      if (filters.bedrooms) {
+        query = query.gte('bedrooms', Number(filters.bedrooms));
+      }
+      
       // If user is not an admin or landlord, only show verified properties
       if (!user || (user.role !== 'admin' && user.role !== 'landlord')) {
         query = query.eq('is_verified', true);
@@ -145,7 +166,7 @@ export function SearchPage() {
     setCities(Array.from(new Set(cities)).sort());
   }, []);
 
-  // Update URL when filters change
+  // Update URL when filters change and load properties when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     
@@ -157,6 +178,21 @@ export function SearchPage() {
     
     // Update URL without causing a page reload
     navigate(`?${params.toString()}`, { replace: true });
+    
+    // Load properties with current filters
+    const loadFilteredProperties = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchProperties();
+        setProperties(data);
+      } catch (error) {
+        console.error('Error loading filtered properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadFilteredProperties();
   }, [filters, navigate]);
 
   // Load initial data
