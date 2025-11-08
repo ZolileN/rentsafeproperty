@@ -1,6 +1,8 @@
 import { AuthProvider } from './contexts/AuthContext';
 import { Navbar } from './components/Navbar';
 import { Router } from './Router';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -10,6 +12,7 @@ function App() {
         <main className="container mx-auto px-4 py-8">
           <Router />
         </main>
+        <ToastContainer position="top-right" autoClose={5000} />
       </div>
     </AuthProvider>
   );

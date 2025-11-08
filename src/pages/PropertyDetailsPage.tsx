@@ -29,8 +29,11 @@ import {
   ShowerHead,
   Bell,
   Flame,
-  Calendar
+  Calendar,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -57,9 +60,11 @@ interface Property {
 
 export function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
-  const [property, setProperty] = useState<Property | null>(null);
+  const [property, setProperty] = useState<Property & { landlord_id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -137,9 +142,44 @@ useEffect(() => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  const handleDeleteProperty = async () => {
+    if (!id || !user) return;
+    
+    setIsDeleting(true);
+    try {
+      // First, delete any associated favorites
+      const { error: favoriteError } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('property_id', id);
+      
+      if (favoriteError) throw favoriteError;
+      
+      // Then delete the property
+      const { error: propertyError } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', id)
+        .eq('landlord_id', user.id);
+      
+      if (propertyError) throw propertyError;
+      
+      toast.success('Property deleted successfully');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error deleting property:', error);
+      toast.error('Failed to delete property. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   if (!property) {
     return <div className="min-h-screen flex items-center justify-center">Property not found</div>;
   }
+  
+  const isOwner = user && property.landlord_id === user.id;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -161,9 +201,59 @@ useEffect(() => {
               <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
               <span className="ml-2">{isFavorite ? 'Saved' : 'Save'}</span>
             </button>
+            
+            {isOwner && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="ml-4 flex items-center text-red-600 hover:text-red-800"
+                disabled={isDeleting}
+              >
+                <Trash2 className="w-5 h-5 mr-1" />
+                <span>Delete Property</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex items-center mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-500 mr-2" />
+              <h3 className="text-lg font-semibold">Delete Property</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this property? This action cannot be undone and will permanently remove all property data.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteProperty}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : 'Delete Property'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Property content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
