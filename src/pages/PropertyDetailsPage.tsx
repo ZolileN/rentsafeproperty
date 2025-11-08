@@ -29,7 +29,8 @@ import {
   Flame,
   Calendar,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Pencil  
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
@@ -200,6 +201,15 @@ useEffect(() => {
               <span className="ml-2">{isFavorite ? 'Saved' : 'Save'}</span>
             </button>
             
+            {user?.id === property.landlord_id && (
+              <Link
+                to={`/property/${property.id}/edit`}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Property
+              </Link>
+            )}
             {isOwner && (
               <button
                 onClick={() => setShowDeleteConfirm(true)}

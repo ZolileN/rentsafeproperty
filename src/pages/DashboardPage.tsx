@@ -167,7 +167,7 @@ const DashboardPage = () => {
         <h2 className="text-2xl font-bold">My Properties</h2>
         <Link
           to="/property/new"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Property
@@ -218,8 +218,14 @@ const DashboardPage = () => {
                     <span className="text-sm font-normal text-gray-500">/month</span>
                   </span>
                   <Link
+                    to={`/property/${property.id}/edit`}
+                    className="text-emerald-600 hover:text-emerald-800 text-sm font-medium"
+                  >
+                    Edit
+                  </Link>
+                  <Link
                     to={`/property/${property.id}`}
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="text-green-600 hover:text-green-800 text-sm font-medium"
                   >
                     View Details
                   </Link>

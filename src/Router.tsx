@@ -11,6 +11,7 @@ import { VerificationPage } from './pages/verification/VerificationPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { EditPropertyPage } from './pages/EditPropertyPage';
 
 export function Router() {
   const location = useLocation();
@@ -61,6 +62,14 @@ export function Router() {
         element={
           <ProtectedRoute>
             <VerificationPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/property/:id/edit"
+        element={
+          <ProtectedRoute>
+            <EditPropertyPage />
           </ProtectedRoute>
         }
       />
