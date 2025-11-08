@@ -3,6 +3,7 @@ import { Search, MapPin, Filter, Home as HomeIcon, Building2, Building, X } from
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Property } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { PropertyCard } from '../components/PropertyCard';
 
 const propertyTypes = [
@@ -39,14 +40,27 @@ export function SearchPage() {
 
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
 
+  const { user } = useAuth();
+
   const fetchProperties = async (): Promise<Property[]> => {
     try {
       console.log('Fetching properties...');
-      const { data: properties, error } = await supabase
+      
+      // Base query for active properties
+      let query = supabase
         .from('properties')
         .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .eq('is_active', true);
+      
+      // If user is not an admin or landlord, only show verified properties
+      if (!user || (user.role !== 'admin' && user.role !== 'landlord')) {
+        query = query.eq('is_verified', true);
+      }
+      
+      // Add ordering
+      query = query.order('created_at', { ascending: false });
+      
+      const { data: properties, error } = await query;
 
       if (error) {
         console.error('Supabase error:', error);
@@ -71,6 +85,10 @@ export function SearchPage() {
       
       // Set up real-time subscription for property changes
       console.log('Setting up subscription...');
+      // Create a filter for the subscription based on user role
+      const subscriptionFilter = user?.role === 'admin' || user?.role === 'landlord'
+      ? 'is_active=eq.true'
+      : 'is_active=eq.true,is_verified=eq.true';
       const subscription = supabase
         .channel('public:properties')
         .on('postgres_changes', 
@@ -78,7 +96,7 @@ export function SearchPage() {
             event: '*', 
             schema: 'public', 
             table: 'properties',
-            filter: 'is_active=eq.true'
+            filter: subscriptionFilter
           }, 
           (payload) => {
             console.log('Received change:', payload);
