@@ -4,6 +4,7 @@ import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight, Star, Heart } 
 import { Link } from 'react-router-dom';
 import { supabase, type Property } from '../lib/supabase';
 import { PropertyCard } from '../components/PropertyCard';
+import { useAuth } from '../contexts/AuthContext';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -108,13 +109,21 @@ setFeaturedProperties([
     }
   }
 
+  const { user } = useAuth();
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim() || location.trim()) {
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('q', searchQuery);
-      if (location) params.append('location', location);
-      window.location.href = `/search?${params.toString()}`;
+    if (!searchQuery.trim() && !location.trim()) return;
+
+    const params = new URLSearchParams();
+    if (searchQuery) params.append('q', searchQuery);
+    if (location) params.append('location', location);
+    
+    if (!user) {
+      // Redirect to login with the intended search URL
+      navigate(`/login?redirect=/search?${params.toString()}`);
+    } else {
+      navigate(`/search?${params.toString()}`);
     }
   };
 

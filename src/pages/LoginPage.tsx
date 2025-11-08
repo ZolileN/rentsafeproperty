@@ -23,7 +23,10 @@ export function LoginPage() {
 
     try {
       await signIn(email, password);
-      navigate('/');
+      // Get the redirect URL from query params, default to '/'
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectTo = searchParams.get('redirect') || '/';
+      navigate(redirectTo);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign in');
     } finally {
