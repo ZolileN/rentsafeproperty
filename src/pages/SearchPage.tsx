@@ -41,17 +41,22 @@ export function SearchPage() {
 
   const fetchProperties = async (): Promise<Property[]> => {
     try {
+      console.log('Fetching properties...');
       const { data: properties, error } = await supabase
         .from('properties')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
+      console.log('Fetched properties:', properties);
       return properties || [];
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error('Error in fetchProperties:', error);
       return [];
     }
   };
@@ -59,27 +64,42 @@ export function SearchPage() {
   const loadProperties = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Loading properties...');
       const data = await fetchProperties();
+      console.log('Setting properties:', data);
       setProperties(data);
       
       // Set up real-time subscription for property changes
+      console.log('Setting up subscription...');
       const subscription = supabase
-        .channel('properties')
+        .channel('public:properties')
         .on('postgres_changes', 
           { 
             event: '*', 
             schema: 'public', 
-            table: 'properties' 
+            table: 'properties',
+            filter: 'is_active=eq.true'
           }, 
           (payload) => {
+            console.log('Received change:', payload);
             // Refresh properties when there are changes
-            fetchProperties().then(data => setProperties(data));
+            fetchProperties().then(data => {
+              console.log('Updated properties after change:', data);
+              setProperties(data);
+            });
           }
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          if (err) {
+            console.error('Subscription error:', err);
+            return;
+          }
+          console.log('Subscription status:', status);
+        });
       
       // Cleanup subscription on unmount
       return () => {
+        console.log('Unsubscribing...');
         subscription.unsubscribe();
       };
     } catch (error) {
