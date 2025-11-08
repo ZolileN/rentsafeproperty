@@ -37,7 +37,7 @@ export function Router() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/search" element={<SearchPage />} />
-      <Route path="/properties/:id" element={<PropertyDetailsPage />} />
+      <Route path="/property/:id" element={<PropertyDetailsPage />} />
       
       {/* Protected Routes */}
       <Route

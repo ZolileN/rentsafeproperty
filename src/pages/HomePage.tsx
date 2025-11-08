@@ -397,7 +397,7 @@ setFeaturedProperties([
               {featuredProperties.map((property) => (
                 <div 
                   key={property.id} 
-                  onClick={() => navigate(`/properties/${property.id}`)}
+                  onClick={() => navigate(`/property/${property.id}`)}
                   className="cursor-pointer"
                 >
                   <PropertyCard property={property} />

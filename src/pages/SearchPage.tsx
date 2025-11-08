@@ -456,7 +456,7 @@ export function SearchPage() {
                 <PropertyCard
                   key={property.id}
                   property={property}
-                  onClick={() => { window.location.href = `/property/${property.id}`; }}
+                  onClick={() => navigate(`/property/${property.id}`)}
                 />
               ))
             ) : (

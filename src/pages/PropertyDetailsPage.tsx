@@ -189,7 +189,7 @@ useEffect(() => {
           <div className="flex justify-between items-center h-16">
             <button 
               onClick={() => navigate(-1)}
-              className="flex items-center text-gray-700 hover:text-blue-600"
+              className="flex items-center text-gray-700 hover:text-green-600"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to results
