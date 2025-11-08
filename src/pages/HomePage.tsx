@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight, Star, Heart, Building2, Building, X, Filter } from 'lucide-react';
+import { Search, Shield, CheckCircle, Home, MapPin, ChevronRight, Building2, Building, X, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase, type Property } from '../lib/supabase';
 import { PropertyCard } from '../components/PropertyCard';
@@ -49,51 +49,78 @@ export function HomePage() {
         setFeaturedProperties(data);
       } else {
         // Fallback mock data
-        // Inside the loadFeaturedProperties function, replace the fallback mock data with:
-setFeaturedProperties([
-  {
-    id: '1',
-    title: 'Modern 3 Bedroom House in Sandton',
-    rent_amount: 25000,
-    address: '123 Main St, Sandton',
-    city: 'Johannesburg',
-    property_type: 'house',
-    bedrooms: 3,
-    bathrooms: 2,
-    images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format'],
-    is_verified: true,
-    created_at: new Date().toISOString(),
-    is_active: true
-  },
-  {
-    id: '2',
-    title: 'Luxury 2 Bedroom Apartment in Sea Point',
-    rent_amount: 18000,
-    address: '45 Beach Road, Sea Point',
-    city: 'Cape Town',
-    property_type: 'apartment',
-    bedrooms: 2,
-    bathrooms: 2,
-    images: ['https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&auto=format'],
-    is_verified: true,
-    created_at: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    is_active: true
-  },
-  {
-    id: '3',
-    title: 'Spacious Family Home in Umhlanga',
-    rent_amount: 32000,
-    address: '12 Lagoon Drive, Umhlanga Rocks',
-    city: 'Durban',
-    property_type: 'house',
-    bedrooms: 4,
-    bathrooms: 3,
-    images: ['https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format'],
-    is_verified: true,
-    created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-    is_active: true
-  }
-]);
+        const mockProperties: Property[] = [
+          {
+            id: '1',
+            title: 'Modern Apartment in Sandton',
+            rent_amount: 12000,
+            deposit_amount: 12000,
+            address: '123 Sandton Drive, Sandton',
+            city: 'Johannesburg',
+            property_type: 'apartment',
+            bedrooms: 2,
+            bathrooms: 2,
+            images: ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'],
+            is_verified: true,
+            verification_status: 'verified',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            is_active: true,
+            landlord_id: 'landlord1',
+            description: 'A beautiful modern apartment in the heart of Sandton',
+            province: 'Gauteng',
+            postal_code: '2196',
+            available_from: new Date().toISOString(),
+            amenities: ['WiFi', 'Parking', 'Security', 'Swimming Pool']
+          },
+          {
+            id: '2',
+            title: 'Luxury Apartment in Cape Town',
+            rent_amount: 15000,
+            deposit_amount: 15000,
+            address: '45 Sea Point Road, Cape Town',
+            city: 'Cape Town',
+            property_type: 'apartment',
+            bedrooms: 3,
+            bathrooms: 2,
+            images: ['https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'],
+            is_verified: true,
+            verification_status: 'verified',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            is_active: true,
+            landlord_id: 'landlord2',
+            description: 'Luxury apartment with sea views in Sea Point',
+            province: 'Western Cape',
+            postal_code: '8005',
+            available_from: new Date().toISOString(),
+            amenities: ['WiFi', 'Parking', 'Gym', 'Sea View', 'Balcony']
+          },
+          {
+            id: '3',
+            title: 'Cozy House in Pretoria',
+            rent_amount: 10000,
+            deposit_amount: 10000,
+            address: '78 Church Street, Pretoria',
+            city: 'Pretoria',
+            property_type: 'house',
+            bedrooms: 3,
+            bathrooms: 2,
+            images: ['https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'],
+            is_verified: true,
+            verification_status: 'verified',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            is_active: true,
+            landlord_id: 'landlord3',
+            description: 'Cozy family home in a quiet neighborhood',
+            province: 'Gauteng',
+            postal_code: '0002',
+            available_from: new Date().toISOString(),
+            amenities: ['Garden', 'Parking', 'Pet Friendly', 'Security']
+          },
+        ];
+        setFeaturedProperties(mockProperties);
       }
     } catch (error) {
       console.error('Error loading properties:', error);
