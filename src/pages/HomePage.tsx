@@ -219,8 +219,10 @@ setFeaturedProperties([
                 key={type.id}
                 type="button"
                 onClick={() => setPropertyType(type.id === propertyType ? '' : type.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-colors ${
-                  propertyType === type.id ? 'bg-emerald-600' : 'bg-gray-800/50 hover:bg-gray-700/50'
+                className={`flex items-center space-x-2 px-6 py-3 rounded-lg transition-all duration-200 ${
+                  propertyType === type.id 
+                    ? 'bg-emerald-600 ring-2 ring-emerald-400 ring-offset-2 ring-offset-gray-900' 
+                    : 'bg-gray-800/50 hover:bg-gray-700/50 hover:ring-2 hover:ring-emerald-400 hover:ring-offset-2 hover:ring-offset-gray-900'
                 }`}
               >
                 {type.icon}
