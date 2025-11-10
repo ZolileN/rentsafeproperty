@@ -68,11 +68,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string, fullName: string, role: 'tenant' | 'landlord') {
+    // Ensure we're using the correct origin (handles both development and production)
+    const siteUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
+    const redirectTo = `${siteUrl}/auth/callback`;
+    
+    console.log('Using redirect URL:', redirectTo); // For debugging
+    
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: redirectTo,
         data: {
           full_name: fullName,
           role: role,
