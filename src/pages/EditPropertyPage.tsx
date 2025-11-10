@@ -1,20 +1,33 @@
-// Add these imports at the top with other imports
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { 
-  Check, X, MapPin, Calendar, CheckCircle, 
-  ArrowLeft, Home, Building, Warehouse, 
-  Bed, Bath, Wifi, Tv, Utensils, 
-  Snowflake, Dumbbell, Car, PawPrint, 
-  Washer, Microwave, Coffee, Bell, 
-  Lock, Wind, WashingMachine, Toilet, 
-  Shower, Bath as Bathtub, Sofa, ParkingCircle, 
-  Plus, Upload, Trash2, Loader2
+  Check, 
+  X, 
+  Calendar, 
+  ArrowLeft, 
+  Home as HomeIcon, 
+  Building, 
+  Warehouse,
+  Bath as BathIcon,
+  Wifi, 
+  Tv, 
+  Utensils, 
+  Snowflake, 
+  Dumbbell, 
+  Car, 
+  PawPrint,
+  Microwave,
+  Bell, 
+  Lock, 
+  Wind,
+  Sofa,
+  Upload, 
+  Loader2,
+  WashingMachine
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-
 type PropertyType = 'apartment' | 'house' | 'townhouse' | 'room';
 
 interface FormData {
@@ -41,10 +54,9 @@ export function EditPropertyPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState('');
+  const [, setErrorState] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{url: string, isUploading: boolean, isUploaded: boolean}[]>([]);
@@ -67,10 +79,12 @@ export function EditPropertyPage() {
     lease_term: '12',
     amenities: [],
   });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
 const propertyTypes = [
-  { id: 'apartment' as const, name: 'Apartment', icon: <Home className="h-5 w-5" /> },
-  { id: 'house' as const, name: 'House', icon: <Home className="h-5 w-5" /> },
+  { id: 'apartment' as const, name: 'Apartment', icon: <HomeIcon className="h-5 w-5" /> },
+  { id: 'house' as const, name: 'House', icon: <HomeIcon className="h-5 w-5" /> },
   { id: 'townhouse' as const, name: 'Townhouse', icon: <Building className="h-5 w-5" /> },
   { id: 'room' as const, name: 'Room', icon: <Warehouse className="h-5 w-5" /> },
 ];
@@ -89,7 +103,7 @@ const amenitiesList = [
     { id: 'gym', name: 'Gym', icon: <Dumbbell className="h-5 w-5" /> },
     { id: 'parking', name: 'Parking', icon: <Car className="h-5 w-5" /> },
     { id: 'pet_friendly', name: 'Pet Friendly', icon: <PawPrint className="h-5 w-5" /> },
-    { id: 'pool', name: 'Pool', icon: <Bath className="h-5 w-5" /> },
+    { id: 'pool', name: 'Pool', icon: <BathIcon className="h-5 w-5" /> },
     { id: 'security', name: 'Security', icon: <Lock className="h-5 w-5" /> },
     { id: 'smoke_alarm', name: 'Smoke Alarm', icon: <Bell className="h-5 w-5" /> },
   ];
@@ -158,12 +172,12 @@ const removeImage = (index: number) => {
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
-  setSaving(true);
-  setError('');
+  setIsSubmitting(true);
+  setSubmitError('');
 
-  if (!user) {
-    setError('You must be logged in to update a property');
-    setSaving(false);
+    if (!user) {
+    setErrorState('You must be logged in to update a property');
+    setIsSubmitting(false);
     return;
   }
 
@@ -192,17 +206,18 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     toast.success('Property updated successfully!');
     navigate(`/property/${id}`);
-  } catch (error) {
-    console.error('Error updating property:', error);
-    setError('Failed to update property. Please try again.');
-  } finally {
-    setSaving(false);
-  }
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error updating property:', error);
+      setErrorState(error.message || 'Failed to update property. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
 };
 
 // Replace the current return statement with this one
 return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+  <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <button
@@ -712,81 +727,102 @@ return (
       </form>
 
       {/* Progress Steps */}
-      <div className="mt-8">
-        <nav className="flex items-center justify-center" aria-label="Progress">
-          <ol className="flex items-center space-x-8">
-            {[1, 2, 3, 4, 5, 6].map((step) => (
-              <li key={step} className="relative">
-                {step < currentStep ? (
-                  <button
-                    onClick={() => setCurrentStep(step)}
-                    className="group flex items-center"
-                  >
-                    <span className="flex items-center h-9">
-                      <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 group-hover:bg-emerald-700">
-                        <Check className="w-5 h-5 text-white" />
+        <div className="mt-8">
+          <nav className="flex items-center justify-center" aria-label="Progress">
+            <ol className="flex items-center space-x-8">
+              {[1, 2, 3, 4, 5, 6].map((step) => (
+                <li key={step} className="relative">
+                  {step < currentStep ? (
+                    <button
+                      onClick={() => setCurrentStep(step)}
+                      className="group flex items-center"
+                    >
+                      <span className="flex items-center h-9">
+                        <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 group-hover:bg-emerald-700">
+                          <Check className="w-5 h-5 text-white" />
+                        </span>
                       </span>
-                    </span>
-                    <span className="ml-4 text-sm font-medium text-emerald-600">
-                      {step === 1 && 'Basic Info'}
-                      {step === 2 && 'Location'}
-                      {step === 3 && 'Details'}
-                      {step === 4 && 'Pricing'}
-                      {step === 5 && 'Amenities'}
-                      {step === 6 && 'Photos'}
-                    </span>
-                  </button>
-                ) : step === currentStep ? (
-                  <button
-                    onClick={() => setCurrentStep(step)}
-                    className="flex items-center"
-                    aria-current="step"
-                  >
-                    <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 border-emerald-600 bg-white">
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
-                    </span>
-                    <span className="ml-4 text-sm font-medium text-emerald-600">
-                      {step === 1 && 'Basic Info'}
-                      {step === 2 && 'Location'}
-                      {step === 3 && 'Details'}
-                      {step === 4 && 'Pricing'}
-                      {step === 5 && 'Amenities'}
-                      {step === 6 && 'Photos'}
-                    </span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setCurrentStep(step)}
-                    className="group flex items-center"
-                  >
-                    <span className="flex items-center h-9">
-                      <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 border-gray-300 bg-white group-hover:border-gray-400">
-                        <span className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300" />
+                      <span className="ml-4 text-sm font-medium text-emerald-600">
+                        {step === 1 && 'Basic Info'}
+                        {step === 2 && 'Location'}
+                        {step === 3 && 'Details'}
+                        {step === 4 && 'Pricing'}
+                        {step === 5 && 'Amenities'}
+                        {step === 6 && 'Photos'}
                       </span>
-                    </span>
-                    <span className="ml-4 text-sm font-medium text-gray-500 group-hover:text-gray-700">
-                      {step === 1 && 'Basic Info'}
-                      {step === 2 && 'Location'}
-                      {step === 3 && 'Details'}
-                      {step === 4 && 'Pricing'}
-                      {step === 5 && 'Amenities'}
-                      {step === 6 && 'Photos'}
-                    </span>
-                  </button>
-                )}
+                    </button>
+                  ) : step === currentStep ? (
+                    <button
+                      onClick={() => setCurrentStep(step)}
+                      className="flex items-center"
+                      aria-current="step"
+                    >
+                      <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 border-emerald-600 bg-white">
+                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                      </span>
+                      <span className="ml-4 text-sm font-medium text-emerald-600">
+                        {step === 1 && 'Basic Info'}
+                        {step === 2 && 'Location'}
+                        {step === 3 && 'Details'}
+                        {step === 4 && 'Pricing'}
+                        {step === 5 && 'Amenities'}
+                        {step === 6 && 'Photos'}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setCurrentStep(step)}
+                      className="group flex items-center"
+                    >
+                      <span className="flex items-center h-9">
+                        <span className="relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 border-gray-300 bg-white group-hover:border-gray-400">
+                          <span className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300" />
+                        </span>
+                      </span>
+                      <span className="ml-4 text-sm font-medium text-gray-500 group-hover:text-gray-700">
+                        {step === 1 && 'Basic Info'}
+                        {step === 2 && 'Location'}
+                        {step === 3 && 'Details'}
+                        {step === 4 && 'Pricing'}
+                        {step === 5 && 'Amenities'}
+                        {step === 6 && 'Photos'}
+                      </span>
+                    </button>
+                  )}
 
-                {step < 6 && (
-                  <div
-                    className="absolute top-4 left-7 -ml-px w-8 h-0.5 bg-gray-300"
-                    aria-hidden="true"
-                  />
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
+                  {step < 6 && (
+                    <div
+                      className="absolute top-4 left-7 -ml-px w-8 h-0.5 bg-gray-300"
+                      aria-hidden="true"
+                    />
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
       </div>
-    </div>
+        {isSubmitting && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-xl">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
+                <p className="text-center">Saving changes...</p>
+              </div>
+            </div>
+          )}
+
+          {submitError && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <X className="h-5 w-5 text-red-500" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{submitError}</p>
+                </div>
+              </div>
+            </div>
+          )}
   </div>
 );
 }

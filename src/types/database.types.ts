@@ -42,6 +42,8 @@ export interface Property {
   id: string;
   title: string;
   description: string;
+  price: number;
+  monthly_rent: number;
   rent_amount: number;
   address: string;
   city: string;
@@ -64,4 +66,12 @@ export interface Property {
   pet_friendly?: boolean;
   utilities_included?: boolean;
   lease_term_months?: number;
+}
+export interface Application {
+  id: string;
+  property_id: string;
+  property_title: string;
+  status: 'pending' | 'approved' | 'rejected';
+  landlord_name: string;
+  created_at: string;
 }

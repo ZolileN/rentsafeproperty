@@ -1,18 +1,20 @@
-// src/Router.tsx
+import { useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
 import { SignUpPage } from './pages/SignUpPage';
 import { LoginPage } from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { SearchPage } from './pages/SearchPage';
 import NewPropertyPage from './pages/NewPropertyPage';
 import { PropertyDetailsPage } from './pages/PropertyDetailsPage';
 import { VerificationPage } from './pages/verification/VerificationPage';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { useEffect } from 'react';
-import { useAuth } from './contexts/AuthContext';
 import { EditPropertyPage } from './pages/EditPropertyPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { PropertiesList } from './components/dashboard/PropertiesList';
+import { ApplicationsList } from './components/dashboard/ApplicationsList';
+import { TenantDashboard } from './components/dashboard/TenantDashboard';
 
 export function Router() {
   const location = useLocation();
@@ -40,6 +42,8 @@ export function Router() {
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/search" element={<SearchPage />} />
       <Route path="/property/:id" element={<PropertyDetailsPage />} />
+      <Route path="/dashboard/properties" element={<PropertiesList />} />
+      <Route path="/dashboard/applications" element={<ApplicationsList />} />
       
       {/* Protected Routes */}
       <Route
@@ -80,6 +84,22 @@ export function Router() {
           <AuthCallbackPage /> 
         } 
       />
+      <Route
+        path="/tenant/dashboard"
+          element={
+            <ProtectedRoute>
+              <TenantDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tenant/applications"
+          element={
+            <ProtectedRoute>
+              <ApplicationsList />
+            </ProtectedRoute>
+          }
+        />
     </Routes>
   );
 }
