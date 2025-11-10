@@ -12,6 +12,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { EditPropertyPage } from './pages/EditPropertyPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
 
 export function Router() {
   const location = useLocation();
@@ -72,6 +73,12 @@ export function Router() {
             <EditPropertyPage />
           </ProtectedRoute>
         }
+      />
+      <Route 
+        path="/auth-callback" 
+        element={   
+          <AuthCallbackPage /> 
+        } 
       />
     </Routes>
   );

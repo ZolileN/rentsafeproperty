@@ -88,7 +88,7 @@ export function SignUpPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-300">
                 Full Name
               </label>
               <input
@@ -97,13 +97,13 @@ export function SignUpPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition text-gray-300"
+                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition text-white bg-gray-700"
                 placeholder="John Doe"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email Address
               </label>
               <input
@@ -112,7 +112,7 @@ export function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition text-gray-300"
+                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition text-white bg-gray-700"
                 placeholder="jackson@example.com"
               />
             </div>
@@ -128,7 +128,7 @@ export function SignUpPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition text-gray-300"
+                className="w-full px-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition text-white bg-gray-700"
                 placeholder="At least 6 characters"
               />
             </div>
