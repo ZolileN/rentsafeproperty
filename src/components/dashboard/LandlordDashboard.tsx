@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { 
   Home, 
   FileText, 
@@ -9,7 +9,8 @@ import {
   LogOut,
   AlertCircle,
   Loader2,
-  Bell
+  Bell,
+  Building
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -158,32 +159,46 @@ export function LandlordDashboard() {
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gray-800 text-white transition-all duration-300`}>
-        <div className="p-4">
+        <div className="p-4 flex items-center justify-between">
           <h1 className={`text-2xl font-bold ${!sidebarOpen && 'hidden'}`}>RentSafe</h1>
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-gray-400 hover:text-white"
+            className="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           >
-            {sidebarOpen ? '«' : '»'}
+            {sidebarOpen ? (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
           </button>
         </div>
         <nav className="mt-10">
           {[
-            { name: 'Dashboard', icon: Home, href: '#' },
-            { name: 'Properties', icon: Home, href: '/dashboard/properties' },
+            { name: 'Dashboard', icon: Home, href: '/dashboard' },
+            { name: 'Properties', icon: Building, href: '/dashboard/properties' },
             { name: 'Applications', icon: FileText, href: '/dashboard/applications' },
             { name: 'Payments', icon: DollarSign, href: '/dashboard/payments' },
             { name: 'Tenants', icon: Users, href: '/dashboard/tenants' },
             { name: 'Settings', icon: Settings, href: '/dashboard/settings' },
           ].map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white"
-            >
-              <item.icon className="h-5 w-5" />
-              <span className={`ml-3 ${!sidebarOpen && 'hidden'}`}>{item.name}</span>
-            </Link>
+            <NavLink
+                key={item.name}
+                to={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }: { isActive: boolean }) => 
+                  `flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white ${
+                    isActive ? 'bg-gray-900' : ''
+                  } ${!sidebarOpen ? 'justify-center' : ''}`
+                }
+              >
+                <item.icon className="h-5 w-5" />
+                <span className={`ml-3 ${!sidebarOpen && 'hidden'}`}>{item.name}</span>
+              </NavLink>
           ))}
           <button
             onClick={signOut}
