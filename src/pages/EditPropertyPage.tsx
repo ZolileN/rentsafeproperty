@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -54,9 +54,10 @@ export function EditPropertyPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [saving] = useState(false);
+  const [, setLoading] = useState(true);
+  const [saving] = useState(false);  // Or remove it entirely if not needed
   const [uploading, setUploading] = useState(false);
-  const [, setErrorState] = useState('');
+  const [, setError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{url: string, isUploading: boolean, isUploaded: boolean}[]>([]);
@@ -79,8 +80,66 @@ export function EditPropertyPage() {
     lease_term: '12',
     amenities: [],
   });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  // Fetch property data when component mounts
+  useEffect(() => {
+    const fetchProperty = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const { data: property, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+        if (!property) throw new Error('Property not found');
+
+        // Format the data to match the form structure
+        setFormData({
+          title: property.title || '',
+          description: property.description || '',
+          address: property.address || '',
+          city: property.city || '',
+          province: property.province || '',
+          postal_code: property.postal_code || '',
+          property_type: (property.property_type as PropertyType) || 'apartment',
+          bedrooms: property.bedrooms || 1,
+          bathrooms: property.bathrooms || 1,
+          ensuite: property.ensuite || 0,
+          parking: property.parking || 0,
+          floor_size: property.floor_size?.toString() || '',
+          rent_amount: property.rent_amount?.toString() || '',
+          deposit_amount: property.deposit_amount?.toString() || '',
+          available_from: property.available_from?.split('T')[0] || '',
+          lease_term: property.lease_term?.toString() || '12',
+          amenities: property.amenities || [],
+        });
+
+        // Set existing images if any
+        if (property.images && property.images.length > 0) {
+          setImageUrls(property.images);
+          setPreviewUrls(property.images.map((url: string) => ({
+            url,
+            isUploading: false,
+            isUploaded: true
+          })));
+        }
+      } catch (err) {
+        console.error('Error fetching property:', err);
+        setError('Failed to load property data');
+        toast.error('Failed to load property data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
 
 const propertyTypes = [
   { id: 'apartment' as const, name: 'Apartment', icon: <HomeIcon className="h-5 w-5" /> },
@@ -175,8 +234,8 @@ const handleSubmit = async (e: React.FormEvent) => {
   setIsSubmitting(true);
   setSubmitError('');
 
-    if (!user) {
-    setErrorState('You must be logged in to update a property');
+  if (!user) {
+    setError('You must be logged in to update a property');
     setIsSubmitting(false);
     return;
   }
@@ -192,9 +251,9 @@ const handleSubmit = async (e: React.FormEvent) => {
       parking: parseInt(formData.parking.toString(), 10),
       floor_size: formData.floor_size ? parseInt(formData.floor_size, 10) : null,
       images: imageUrls,
-      is_verified: false, // Reset verification status when updating
-      verification_status: 'pending', // Reset verification status when updating
-      updated_at: new Date().toISOString(),
+      is_verified: false,
+      verification_status: 'pending',
+      updated_at: new Date().toISOString()
     };
 
     const { error } = await supabase
@@ -205,14 +264,15 @@ const handleSubmit = async (e: React.FormEvent) => {
     if (error) throw error;
 
     toast.success('Property updated successfully!');
-    navigate(`/property/${id}`);
-    } catch (err) {
-      const error = err as Error;
-      console.error('Error updating property:', error);
-      setErrorState(error.message || 'Failed to update property. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    navigate('/dashboard/properties'); // Navigate back to properties page
+  } catch (err) {
+    const error = err as Error;
+    console.error('Error updating property:', error);
+    setSubmitError(error.message || 'Failed to update property');
+    toast.error('Failed to update property');
+  } finally {
+    setIsSubmitting(false);
+  }
 };
 
 // Replace the current return statement with this one
@@ -279,19 +339,30 @@ return (
                 </p>
               </div>
 
-              <div className="sm:col-span-6">
+             <div className="sm:col-span-6">
                 <label className="block text-sm font-medium text-white">Property Type</label>
                 <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {propertyTypes.map((type) => (
                     <div
                       key={type.id}
-                      className={`relative rounded-lg border border-gray-300 bg-gray-800 px-4 py-3 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-emerald-500 cursor-pointer ${
-                        formData.property_type === type.id ? 'border-emerald-500 ring-2 ring-emerald-200' : ''
-                      }`}
+                      className={`
+                        relative rounded-lg border-2 p-4 flex flex-col items-center
+                        transition-all duration-200 cursor-pointer
+                        ${
+                          formData.property_type === type.id
+                            ? 'border-emerald-500 bg-emerald-900/20'
+                            : 'border-gray-600 hover:border-emerald-500 hover:bg-gray-700/50'
+                        }
+                        hover:shadow-lg hover:shadow-emerald-500/20
+                      `}
                       onClick={() => setFormData(prev => ({ ...prev, property_type: type.id }))}
                     >
-                      {type.icon}
-                      <span className="block text-sm font-medium text-gray-900">{type.name}</span>
+                      <div className="text-emerald-400 mb-2">
+                        {type.icon}
+                      </div>
+                      <span className="text-sm font-medium text-white">
+                        {type.name}
+                      </span>
                     </div>
                   ))}
                 </div>
