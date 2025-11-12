@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link  } from 'react-router-dom';
 import { 
   Heart, 
@@ -30,7 +30,10 @@ import {
   Calendar,
   Trash2,
   AlertTriangle,
-  Pencil  
+  Pencil,
+  X,
+  ArrowRight,
+  ZoomIn
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
@@ -66,6 +69,30 @@ export function PropertyDetailsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+// Add keyboard navigation
+const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  if (!isModalOpen || !property) return;
+  
+  if (e.key === 'Escape') {
+    setIsModalOpen(false);
+  } else if (e.key === 'ArrowRight') {
+    setSelectedImageIndex(prev => 
+      prev === null || prev === property.images.length - 1 ? 0 : prev + 1
+    );
+  } else if (e.key === 'ArrowLeft') {
+    setSelectedImageIndex(prev => 
+      prev === null || prev === 0 ? property.images.length - 1 : prev - 1
+    );
+  }
+}, [isModalOpen, property]);
+
+useEffect(() => {
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, [handleKeyDown]);
 
   // In PropertyDetailsPage.tsx
 useEffect(() => {
@@ -293,7 +320,7 @@ useEffect(() => {
               </div>
               <div className="flex flex-col items-end">
                 <div className="text-2xl font-bold text-green-600">
-                  R{property.rent_amount?.toLocaleString()}/month
+                  R{property.rent_amount?.toLocaleString()}/mo
                 </div>
                 {property.deposit_amount && (
                   <div className="text-sm text-gray-600 mt-1">
@@ -390,6 +417,32 @@ useEffect(() => {
               )}
             </div>
 
+            {/* Image Grid */}
+              <div className="mt-6">
+                <h2 className="text-xl font-semibold mb-4">Photos</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {property.images?.map((image, index) => (
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
+                      onClick={() => {
+                        setSelectedImageIndex(index);
+                        setIsModalOpen(true);
+                      }}
+                    >
+                      <img
+                        src={image}
+                        alt={`Property ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ZoomIn className="h-8 w-8 text-white" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             {/* Description */}
             <div className="mt-8">
               <h2 className="text-2xl font-bold mb-4 text-gray-900 border-b pb-2">Description</h2>
@@ -443,15 +496,73 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Contact/CTA */}
+                        {/* Contact/CTA */}
+            {/* 
             <div className="mt-8 pt-6 border-t border-gray-200">
               <button className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition">
                 Contact Landlord
               </button>
             </div>
+            */}
           </div>
         </div>
       </div>
+      {/* Image Modal */}
+          {isModalOpen && selectedImageIndex !== null && property.images?.[selectedImageIndex] && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+              onClick={() => setIsModalOpen(false)}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsModalOpen(false);
+                }}
+                className="absolute top-4 right-4 text-white hover:text-emerald-400 z-10"
+              >
+                <X className="h-8 w-8" />
+              </button>
+              
+              <div 
+                className="relative w-full max-w-4xl max-h-[90vh]"
+                onClick={e => e.stopPropagation()}
+              >
+                <img
+                  src={property.images[selectedImageIndex]}
+                  alt={`Property ${selectedImageIndex + 1}`}
+                  className="max-h-[80vh] w-auto mx-auto"
+                />
+                
+                {/* Navigation Arrows */}
+                {property.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImageIndex(prev => 
+                          prev === 0 ? property.images.length - 1 : (prev || 0) - 1
+                        );
+                      }}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-emerald-600 transition-colors"
+                    >
+                      <ArrowLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImageIndex(prev => 
+                          prev === property.images.length - 1 ? 0 : (prev || 0) + 1
+                        );
+                      }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-emerald-600 transition-colors"
+                    >
+                      <ArrowRight className="h-6 w-6" />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
     </div>
   );
 }
